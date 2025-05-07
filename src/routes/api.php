@@ -3,7 +3,6 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
-
 Route::get('/homepage', function () {
     return response()->json([
         'hero' => [
@@ -245,7 +244,7 @@ Route::get('/appointments/availability', function () {
 
 Route::post('/appointments/book', function (Request $request) {
     // For now, just log the appointment data to Laravel logs
-    \Log::info('Appointment booked:', $request->all());
+    Log::info('Appointment booked:', $request->all());
 
     return response()->json([
         'status' => 'success',
@@ -274,4 +273,25 @@ Route::post('/contact-message', function (Request $request) {
     Log::info('Contact Form Submission', $request->all());
 
     return response()->json(['message' => 'Message received successfully!']);
+});
+
+
+Route::post('/signup-preview', function (Request $request) {
+    Log::info('Signup form data:', $request->all());
+    return response()->json(['status' => 'ok']);
+});
+
+
+
+// routes/api.php
+Route::post('/login', function (Request $request) {
+    $email = $request->input('email');
+    $password = $request->input('password');
+
+    // Default hardcoded credentials (for testing only)
+    if ($email === 'themhz@gmail.com' && $password === '526996') {
+        return response()->json(['success' => true, 'message' => 'Login successful']);
+    }
+
+    return response()->json(['success' => false, 'message' => 'Invalid credentials'], 401);
 });
