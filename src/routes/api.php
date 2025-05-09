@@ -2,6 +2,8 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\AuthController;
+
 
 Route::get('/homepage', function () {
     return response()->json([
@@ -282,16 +284,29 @@ Route::post('/signup-preview', function (Request $request) {
 });
 
 
+// Remove any existing login routes first
+Route::post('/login', [AuthController::class, 'login'])->name('api.login'); // Name it differently
 
-// routes/api.php
-Route::post('/login', function (Request $request) {
-    $email = $request->input('email');
-    $password = $request->input('password');
+// Protected routes
+// Route::middleware('auth:sanctum')->get('/profile', function (Request $request) {
+//     return $request->expectsJson()
+//         ? response()->json($request->user())
+//         : abort(401);
+// });
 
-    // Default hardcoded credentials (for testing only)
-    if ($email === 'themhz@gmail.com' && $password === '526996') {
-        return response()->json(['success' => true, 'message' => 'Login successful']);
-    }
-
-    return response()->json(['success' => false, 'message' => 'Invalid credentials'], 401);
+Route::middleware('auth:sanctum')->get('/profile', function (Request $request) {
+    // return $request->expectsJson()
+    //     ? response()->json($request->user())
+    //     : abort(401);
+    return response()->json(['status' => 'ok']);
 });
+
+
+Route::get('/login', function (Request $request) {
+    // return $request->expectsJson()
+    //     ? response()->json($request->user())
+    //     : abort(401);
+    return response()->json(['status' => 'no login bro']);
+});
+
+
