@@ -310,3 +310,5 @@ Route::get('/login', function (Request $request) {
 });
 
 
+// In api.php
+Route::post('/login', [AuthController::class, 'login'])->name('login'); // Changed to 'login'
