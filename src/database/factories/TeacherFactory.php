@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Team;
+use App\Models\User;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Teacher>
@@ -23,6 +24,8 @@ class TeacherFactory extends Factory
             'bio' => $this->faker->paragraph,
             'photo' => null,
             'team_id' => Team::factory(),
+            'user_id' => User::factory(),  // ← this line is required
+
         ];
     }
 

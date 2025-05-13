@@ -33,6 +33,14 @@ class DatabaseSeeder extends Seeder
 
     public function run()
     {
-        $this->call(AppointmentAvailabilitySeeder::class);
+        $this->call([
+            TeamSeeder::class,
+            TeacherSeeder::class,
+            UserSeeder::class,
+            PostSeeder::class,          
+            StudentSeeder::class,
+
+            // add all your seeders here
+        ]);
     }
 }

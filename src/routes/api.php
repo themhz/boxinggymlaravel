@@ -1,4 +1,5 @@
 <?php
+use App\Http\Controllers\PostController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -378,6 +379,7 @@ Route::apiResource('students', StudentController::class)->only(['index', 'show']
 Route::apiResource('class-types', ClassTypeController::class)->only(['index', 'show']);
 Route::apiResource('programs', ProgramController::class)->only(['index', 'show']);
 Route::apiResource('appointments', AppointmentController::class)->only(['index', 'show']);
+Route::apiResource('posts', PostController::class)->only(['index', 'show']);
 //Route::apiResource('availability', AppointmentAvailabilityController::class)->only(['index', 'show']);
 Route::get('/availability', [AvailabilityController::class, 'index']);
 
@@ -392,5 +394,22 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('programs', ProgramController::class)->except(['index', 'show']);
     Route::apiResource('appointments', AppointmentController::class)->except(['index', 'show']);
     Route::apiResource('availability', AppointmentAvailabilityController::class)->except(['index', 'show']);    
+    Route::apiResource('posts', PostController::class)->except(['index', 'show']);    
 
 });
+
+if (app()->environment('local')) {
+    Route::get('/routes', function () {
+        $routes = collect(Route::getRoutes())->map(function ($route) {
+            return [
+                'method' => implode('|', $route->methods()),
+                'uri' => $route->uri(),
+                'name' => $route->getName(),
+                'action' => $route->getActionName(),
+                'middleware' => $route->gatherMiddleware(),
+            ];
+        });
+
+        return response()->json($routes->values());
+    });
+}
