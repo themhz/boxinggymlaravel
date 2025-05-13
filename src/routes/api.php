@@ -3,6 +3,16 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\AuthController;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use App\Http\Controllers\TeamController;
+use App\Http\Controllers\TeacherController;
+use App\Http\Controllers\StudentController;
+use App\Http\Controllers\ClassTypeController;
+use App\Http\Controllers\ProgramController;
+use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\AppointmentAvailabilityController;
+use App\Http\Controllers\AvailabilityController;
+
 
 
 Route::get('/homepage', function () {
@@ -287,28 +297,100 @@ Route::post('/signup-preview', function (Request $request) {
 // Remove any existing login routes first
 Route::post('/login', [AuthController::class, 'login'])->name('api.login'); // Name it differently
 
-// Protected routes
-// Route::middleware('auth:sanctum')->get('/profile', function (Request $request) {
-//     return $request->expectsJson()
-//         ? response()->json($request->user())
-//         : abort(401);
-// });
-
-Route::middleware('auth:sanctum')->get('/profile', function (Request $request) {
-    // return $request->expectsJson()
-    //     ? response()->json($request->user())
-    //     : abort(401);
-    return response()->json(['status' => 'ok']);
-});
 
 
 Route::get('/login', function (Request $request) {
-    // return $request->expectsJson()
-    //     ? response()->json($request->user())
-    //     : abort(401);
+    
     return response()->json(['status' => 'no login bro']);
 });
 
 
-// In api.php
 Route::post('/login', [AuthController::class, 'login'])->name('login'); // Changed to 'login'
+
+Route::middleware('auth:sanctum')->post('/logout', function (Request $request) {
+    $request->user()->currentAccessToken()->delete();
+
+    return response()->json(['message' => 'Logged out successfully']);
+});
+
+
+
+// Protected routes
+Route::middleware('auth:sanctum')->get('/profile', function (Request $request) {    
+    return response()->json(['status' => 'access is granted']);
+});
+
+Route::post('/register', [AuthController::class, 'register']);
+
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+
+Route::get('/reset-password', function (Request $request) {
+    return response()->json([
+        'message' => 'Here is your reset token.',
+        'token' => $request->query('token'),
+        'email' => $request->query('email'),
+    ]);
+})->name('password.reset');
+
+Route::any('/test-route', function () {
+    return response()->json(['message' => 'Fallback route working']);
+});
+
+
+Route::post('/debug-reset', function () {
+    return response()->json(['message' => 'You hit the API route!']);
+});
+
+Route::get('/programs/available', [ProgramController::class, 'available']);
+//Route::post('/availability', [AppointmentAvailabilityController::class, 'store']);
+
+
+Route::middleware('auth:sanctum')->get('/tokens', function (Request $request) {
+    $user = $request->user();
+    $currentTokenId = $user->currentAccessToken()?->id;
+
+    return response()->json([
+        'tokens' => $user->tokens->map(function ($token) use ($currentTokenId) {
+            return [
+                'id' => $token->id,
+                'name' => $token->name,
+                'created_at' => $token->created_at,
+                'last_used_at' => $token->last_used_at,
+                'is_current' => $token->id === $currentTokenId,
+            ];
+        })
+    ]);
+});
+
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    $request->fulfill();
+
+    return response()->json(['message' => 'Email verified successfully!']);
+})->middleware(['auth:sanctum', 'signed'])->name('verification.verify');
+
+
+
+// Publicly readable routes
+Route::apiResource('teams', TeamController::class)->only(['index', 'show']);
+Route::apiResource('teachers', TeacherController::class)->only(['index', 'show']);
+Route::apiResource('students', StudentController::class)->only(['index', 'show']);
+Route::apiResource('class-types', ClassTypeController::class)->only(['index', 'show']);
+Route::apiResource('programs', ProgramController::class)->only(['index', 'show']);
+Route::apiResource('appointments', AppointmentController::class)->only(['index', 'show']);
+//Route::apiResource('availability', AppointmentAvailabilityController::class)->only(['index', 'show']);
+Route::get('/availability', [AvailabilityController::class, 'index']);
+
+
+
+// Protected write routes
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('teams', TeamController::class)->except(['index', 'show']);
+    Route::apiResource('teachers', TeacherController::class)->except(['index', 'show']);
+    Route::apiResource('students', StudentController::class)->except(['index', 'show']);
+    Route::apiResource('class-types', ClassTypeController::class)->except(['index', 'show']);
+    Route::apiResource('programs', ProgramController::class)->except(['index', 'show']);
+    Route::apiResource('appointments', AppointmentController::class)->except(['index', 'show']);
+    Route::apiResource('availability', AppointmentAvailabilityController::class)->except(['index', 'show']);    
+
+});
