@@ -398,7 +398,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 });
 
-if (app()->environment('local')) {
+if (app()->environment(['local', 'testing'])) {
     Route::get('/routes', function () {
         $routes = collect(Route::getRoutes())->map(function ($route) {
             return [
