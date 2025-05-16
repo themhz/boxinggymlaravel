@@ -10,4 +10,10 @@ class PostController extends Controller
     {
         return Post::all();
     }
+
+    public function show($id)
+    {
+        return response()->json(Post::findOrFail($id));
+    }
+
 }
