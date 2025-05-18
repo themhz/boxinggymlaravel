@@ -57,6 +57,7 @@ class TeamController extends Controller
         $team = Team::findOrFail($id);
         $team->delete();
 
-        return response()->json(['message' => 'Team deleted']);
+        return response()->json(['message' => 'Deleted successfully']); // returns 200
+
     }
 }

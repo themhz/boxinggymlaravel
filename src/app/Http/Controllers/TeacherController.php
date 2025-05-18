@@ -24,17 +24,19 @@ class TeacherController extends Controller
             'name' => 'required|string|max:255',
             'specialty' => 'nullable|string|max:255',
             'bio' => 'nullable|string',
-            'photo' => 'nullable|string',
+            'photo' => 'nullable|string|max:255',
             'team_id' => 'required|exists:teams,id',
+            'user_id' => 'required|exists:users,id', // ✅ Add this line
         ]);
 
-        $teacher = Teacher::create($validated);
+        $teacher = Teacher::create($validated); // ✅ Will now include user_id
 
         return response()->json([
             'message' => 'Teacher created successfully',
             'teacher' => $teacher
         ], 201);
     }
+
 
     public function update(Request $request, $id)
     {

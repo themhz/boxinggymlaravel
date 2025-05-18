@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Student extends Model
 {
     use HasFactory;
+    protected $fillable = ['name', 'email', 'user_id']; // Add other fields if needed
+
 
     public function team()
     {

@@ -28,6 +28,9 @@ class StudentController extends Controller
             'team_id' => 'nullable|exists:teams,id',
         ]);
 
+        // Attach the authenticated user's ID
+        $validated['user_id'] = $request->user()->id;
+
         $student = Student::create($validated);
 
         return response()->json([
@@ -35,6 +38,7 @@ class StudentController extends Controller
             'student' => $student
         ], 201);
     }
+
 
     public function update(Request $request, $id)
     {
@@ -61,6 +65,7 @@ class StudentController extends Controller
         $student = Student::findOrFail($id);
         $student->delete();
 
-        return response()->json(['message' => 'Student deleted']);
+        return response()->noContent(); // <- This returns 204
     }
+
 }

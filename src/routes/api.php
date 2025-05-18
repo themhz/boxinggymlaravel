@@ -13,6 +13,7 @@ use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AppointmentAvailabilityController;
 use App\Http\Controllers\AvailabilityController;
+use App\Http\Controllers\ClassController;
 
 
 
@@ -343,7 +344,7 @@ Route::post('/debug-reset', function () {
     return response()->json(['message' => 'You hit the API route!']);
 });
 
-Route::get('/programs/available', [ProgramController::class, 'available']);
+Route::get('/classes/available', [ClassController::class, 'available']);
 //Route::post('/availability', [AppointmentAvailabilityController::class, 'store']);
 
 
@@ -377,7 +378,7 @@ Route::apiResource('teams', TeamController::class)->only(['index', 'show']);
 Route::apiResource('teachers', TeacherController::class)->only(['index', 'show']);
 Route::apiResource('students', StudentController::class)->only(['index', 'show']);
 Route::apiResource('class-types', ClassTypeController::class)->only(['index', 'show']);
-Route::apiResource('programs', ProgramController::class)->only(['index', 'show']);
+Route::apiResource('classes', ClassController::class)->only(['index', 'show']);
 Route::apiResource('appointments', AppointmentController::class)->only(['index', 'show']);
 Route::apiResource('posts', PostController::class)->only(['index', 'show']);
 //Route::apiResource('availability', AppointmentAvailabilityController::class)->only(['index', 'show']);
@@ -389,12 +390,12 @@ Route::get('/availability', [AvailabilityController::class, 'index']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('teams', TeamController::class)->except(['index', 'show']);
     Route::apiResource('teachers', TeacherController::class)->except(['index', 'show']);
-    Route::apiResource('students', StudentController::class)->except(['index', 'show']);
+    Route::apiResource('students', StudentController::class)->except(['index', 'show']); //Working on
     Route::apiResource('class-types', ClassTypeController::class)->except(['index', 'show']);
-    Route::apiResource('programs', ProgramController::class)->except(['index', 'show']);
+    Route::apiResource('classes', ClassController::class)->except(['index', 'show']);
     Route::apiResource('appointments', AppointmentController::class)->except(['index', 'show']);
     Route::apiResource('availability', AppointmentAvailabilityController::class)->except(['index', 'show']);    
-    Route::apiResource('posts', PostController::class)->except(['index', 'show']);    
+    Route::apiResource('posts', PostController::class)->except(['index', 'show']);    //OK
 
 });
 

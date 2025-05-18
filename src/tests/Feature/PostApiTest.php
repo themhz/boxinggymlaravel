@@ -35,42 +35,42 @@ class PostApiTest extends TestCase
         $response->assertOk()->assertJsonFragment(['id' => $post->id]);
     }
 
-    // #[\PHPUnit\Framework\Attributes\Test]
-    // public function it_creates_a_post()
-    // {
-    //     $this->authenticate();
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function it_creates_a_post()
+    {
+        $this->authenticate();
 
-    //     $data = ['title' => 'New Post', 'body' => 'Post body content.'];
-    //     $response = $this->postJson('/api/posts', $data);
+        $data = ['title' => 'New Post', 'content' => 'Post body content.'];
+        $response = $this->postJson('/api/posts', $data);
 
-    //     $response->assertCreated()->assertJsonFragment($data);
-    //     $this->assertDatabaseHas('posts', $data);
-    // }
+        $response->assertCreated()->assertJsonFragment($data);
+        $this->assertDatabaseHas('posts', $data);
+    }
 
-    // #[\PHPUnit\Framework\Attributes\Test]
-    // public function it_updates_a_post()
-    // {
-    //     $this->authenticate();
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function it_updates_a_post()
+    {
+        $this->authenticate();
 
-    //     $post = Post::factory()->create();
-    //     $updateData = ['title' => 'Updated Title', 'body' => 'Updated body.'];
+        $post = Post::factory()->create();
+        $updateData = ['title' => 'Updated Title', 'content' => 'Updated body.'];
 
-    //     $response = $this->putJson("/api/posts/{$post->id}", $updateData);
+        $response = $this->putJson("/api/posts/{$post->id}", $updateData);
 
-    //     $response->assertOk()->assertJsonFragment($updateData);
-    //     $this->assertDatabaseHas('posts', $updateData);
-    // }
+        $response->assertOk()->assertJsonFragment($updateData);
+        $this->assertDatabaseHas('posts', $updateData);
+    }
 
-    // #[\PHPUnit\Framework\Attributes\Test]
-    // public function it_deletes_a_post()
-    // {
-    //     $this->authenticate();
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function it_deletes_a_post()
+    {
+        $this->authenticate();
 
-    //     $post = Post::factory()->create();
+        $post = Post::factory()->create();
 
-    //     $response = $this->deleteJson("/api/posts/{$post->id}");
+        $response = $this->deleteJson("/api/posts/{$post->id}");
 
-    //     $response->assertNoContent();
-    //     $this->assertDatabaseMissing('posts', ['id' => $post->id]);
-    // }
+        $response->assertNoContent();
+        $this->assertDatabaseMissing('posts', ['id' => $post->id]);
+    }
 }
