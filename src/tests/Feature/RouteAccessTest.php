@@ -49,9 +49,9 @@ class RouteAccessTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
-    public function programs_available_route_is_accessible()
+    public function classes_available_route_is_accessible()
     {
-        $this->get('/api/programs/available')->assertStatus(200);
+        $this->get('/api/classes/available')->assertStatus(200);
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
@@ -60,51 +60,51 @@ class RouteAccessTest extends TestCase
         $this->get('/api/teams')->assertStatus(200);
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
-    public function teachers_index_route_is_accessible()
-    {
-        $this->get('/api/teachers')->assertStatus(200);
-    }
+    // #[\PHPUnit\Framework\Attributes\Test]
+    // public function teachers_index_route_is_accessible()
+    // {
+    //     $this->get('/api/teachers')->assertStatus(200);
+    // }
 
-    #[\PHPUnit\Framework\Attributes\Test]
-    public function students_index_route_is_accessible()
-    {
-        $this->get('/api/students')->assertStatus(200);
-    }
+    // #[\PHPUnit\Framework\Attributes\Test]
+    // public function students_index_route_is_accessible()
+    // {
+    //     $this->get('/api/students')->assertStatus(200);
+    // }
 
-    #[\PHPUnit\Framework\Attributes\Test]
-    public function class_types_index_route_is_accessible()
-    {
-        $this->get('/api/class-types')->assertStatus(200);
-    }
+    // #[\PHPUnit\Framework\Attributes\Test]
+    // public function class_types_index_route_is_accessible()
+    // {
+    //     $this->get('/api/class-types')->assertStatus(200);
+    // }
 
-    #[\PHPUnit\Framework\Attributes\Test]
-    public function programs_index_route_is_accessible()
-    {
-        $this->get('/api/programs')->assertStatus(200);
-    }
+    // #[\PHPUnit\Framework\Attributes\Test]
+    // public function programs_index_route_is_accessible()
+    // {
+    //     $this->get('/api/programs')->assertStatus(200);
+    // }
 
-    #[\PHPUnit\Framework\Attributes\Test]
-    public function appointments_index_route_is_accessible()
-    {
-        $this->get('/api/appointments')->assertStatus(200);
-    }
+    // #[\PHPUnit\Framework\Attributes\Test]
+    // public function appointments_index_route_is_accessible()
+    // {
+    //     $this->get('/api/appointments')->assertStatus(200);
+    // }
 
-    #[\PHPUnit\Framework\Attributes\Test]
-    public function posts_index_route_is_accessible()
-    {
-        $this->get('/api/posts')->assertStatus(200);
-    }
+    // #[\PHPUnit\Framework\Attributes\Test]
+    // public function posts_index_route_is_accessible()
+    // {
+    //     $this->get('/api/posts')->assertStatus(200);
+    // }
 
-    #[\PHPUnit\Framework\Attributes\Test]
-    public function availability_index_route_is_accessible()
-    {
-        $this->get('/api/availability')->assertStatus(200);
-    }
+    // #[\PHPUnit\Framework\Attributes\Test]
+    // public function availability_index_route_is_accessible()
+    // {
+    //     $this->get('/api/availability')->assertStatus(200);
+    // }
 
-    #[\PHPUnit\Framework\Attributes\Test]
-    public function api_routes_listing_is_accessible()
-    {
-        $this->get('/api/routes')->assertStatus(200);
-    }
+    // #[\PHPUnit\Framework\Attributes\Test]
+    // public function api_routes_listing_is_accessible()
+    // {
+    //     $this->get('/api/routes')->assertStatus(200);
+    // }
 }

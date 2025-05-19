@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Appointment;
 use Illuminate\Http\Request;
-use App\Models\Program;
+use App\Models\ClassModel;
 use App\Models\AppointmentAvailability;
 
 
@@ -13,13 +13,13 @@ class AppointmentController extends Controller
     public function index()
     {
         return response()->json(
-            Appointment::with(['student', 'program.classType'])->get()
+            Appointment::with(['student', 'class.classType'])->get()
         );
     }
 
     public function show($id)
     {
-        $appointment = Appointment::with(['student', 'program.classType'])->findOrFail($id);
+        $appointment = Appointment::with(['student', 'class.classType'])->findOrFail($id);
         return response()->json($appointment);
     }
 
@@ -29,17 +29,18 @@ class AppointmentController extends Controller
     {
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
-            'program_id' => 'required|exists:programs,id',
+            'class_id' => 'required|exists:clases,id',
             'availability_id' => 'required|exists:appointment_availability,id',
             'status' => 'nullable|in:booked,cancelled,attended',
             'notes' => 'nullable|string',
         ]);
 
         $studentId = $validated['student_id'];
-        $programId = $validated['program_id'];
+        $classId = $validated['class_id'];
         $availabilityId = $validated['availability_id'];
 
-        $program = Program::with('appointments')->findOrFail($programId);
+        $class = ClassModel::with('appointments')->findOrFail($classId);
+
 
         // ✅ Get the availability slot directly
         $availability = AppointmentAvailability::findOrFail($availabilityId);
@@ -47,31 +48,31 @@ class AppointmentController extends Controller
             return response()->json(['message' => 'Selected time slot is not available.'], 409);
         }
 
-        // 🧠 Prevent double booking by same student for same program
-        $alreadyBooked = $program->appointments()
+        // 🧠 Prevent double booking by same student for same class
+        $alreadyBooked = $class->appointments()
             ->where('student_id', $studentId)
             ->where('status', 'booked')
             ->exists();
 
         if ($alreadyBooked) {
-            return response()->json(['message' => 'You have already booked this program.'], 409);
+            return response()->json(['message' => 'You have already booked this class.'], 409);
         }
 
-        // 📆 Check program capacity
-        $bookedCount = $program->appointments()->where('status', 'booked')->count();
-        if ($bookedCount >= $program->capacity) {
-            return response()->json(['message' => 'Program is full.'], 409);
+        // 📆 Check class capacity
+        $bookedCount = $class->appointments()->where('status', 'booked')->count();
+        if ($bookedCount >= $class->capacity) {
+            return response()->json(['message' => 'Class is full.'], 409);
         }
 
         // ⏰ Overlap check
         $conflict = Appointment::where('student_id', $studentId)
-            ->whereHas('program', function ($q) use ($program) {
-                $q->where('day', $program->day);
+            ->whereHas('class', function ($q) use ($class) {
+                $q->where('day', $class->day);
             })
             ->get()
-            ->some(function ($appt) use ($program) {
-                $p = $appt->program;
-                return ($program->start_time < $p->end_time && $program->end_time > $p->start_time);
+            ->some(function ($appt) use ($class) {
+                $p = $appt->class;
+                return ($class->start_time < $p->end_time && $class->end_time > $p->start_time);
             });
 
         if ($conflict) {
@@ -97,7 +98,7 @@ class AppointmentController extends Controller
 
         $validated = $request->validate([
             'student_id' => 'sometimes|exists:students,id',
-            'program_id' => 'sometimes|exists:programs,id',
+            'class_id' => 'sometimes|exists:class,id',
             'status' => 'sometimes|in:booked,cancelled,attended',
             'notes' => 'nullable|string',
         ]);

@@ -9,13 +9,11 @@ use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\ClassTypeController;
-use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AppointmentAvailabilityController;
 use App\Http\Controllers\AvailabilityController;
 use App\Http\Controllers\ClassController;
-
-
+use App\Http\Controllers\LessonController;
 
 Route::get('/homepage', function () {
     return response()->json([
@@ -381,6 +379,7 @@ Route::apiResource('class-types', ClassTypeController::class)->only(['index', 's
 Route::apiResource('classes', ClassController::class)->only(['index', 'show']);
 Route::apiResource('appointments', AppointmentController::class)->only(['index', 'show']);
 Route::apiResource('posts', PostController::class)->only(['index', 'show']);
+Route::apiResource('lessons', LessonController::class)->only(['index', 'show']);
 //Route::apiResource('availability', AppointmentAvailabilityController::class)->only(['index', 'show']);
 Route::get('/availability', [AvailabilityController::class, 'index']);
 
@@ -396,6 +395,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('appointments', AppointmentController::class)->except(['index', 'show']);
     Route::apiResource('availability', AppointmentAvailabilityController::class)->except(['index', 'show']);    
     Route::apiResource('posts', PostController::class)->except(['index', 'show']);    //OK
+    Route::apiResource('lessons', LessonController::class)->except(['index', 'show']);    //OK
+    
 
 });
 

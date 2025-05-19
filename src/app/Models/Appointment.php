@@ -11,7 +11,7 @@ class Appointment extends Model
 
     protected $fillable = [
         'student_id',
-        'program_id',
+        'class_id',
         'status',
         'notes',
     ];
@@ -23,7 +23,7 @@ class Appointment extends Model
         return $this->belongsTo(Student::class);
     }
 
-    public function program()
+    public function lessons()
     {
         return $this->belongsTo(Lesson::class);
     }

@@ -8,10 +8,15 @@ class Lesson extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'description']; // adjust as needed
+    protected $fillable = ['title', 'description', 'teacher_id']; // adjust as needed
 
     public function classes()
     {
         return $this->hasMany(ClassModel::class); // assuming ClassModel is your renamed Program
     }
+    public function teacher()
+    {
+        return $this->belongsTo(Teacher::class);
+    }
+
 }
