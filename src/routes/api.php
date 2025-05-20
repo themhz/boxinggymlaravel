@@ -14,8 +14,23 @@ use App\Http\Controllers\AppointmentAvailabilityController;
 use App\Http\Controllers\AvailabilityController;
 use App\Http\Controllers\ClassController;
 use App\Http\Controllers\LessonController;
+use App\Models\Lesson;
+use App\Http\Controllers\MembershipPlanController;
+use App\Http\Controllers\OfferController;
+use App\Models\MembershipPlan;
+use App\Models\Offer;
 
 Route::get('/homepage', function () {
+    // Grab the first 3 lessons (or whatever logic you prefer)
+    $classes = Lesson::take(3)->get()->map(function ($lesson) {
+        return [
+            'title'       => $lesson->title,
+            'description' => $lesson->description,
+            // Adjust this if you store images elsewhere; asset() will generate a full URL
+            'image'       => $lesson->image,
+        ];
+    });
+
     return response()->json([
         'hero' => [
             'headline' => 'Welcome to IronFist Gym',
@@ -24,23 +39,6 @@ Route::get('/homepage', function () {
             'cta_link' => 'classes.html',
             'alt_text' => 'Book Free Trial',
             'alt_link' => 'appointment.html',
-        ],
-        'classes' => [
-            [
-                'title' => 'Boxing',
-                'description' => 'Train like a champion with our boxing classes.',
-                'image' => '/templates/boxinggym/boxinggym1/assets/img/boxing3.jpg',
-            ],
-            [
-                'title' => 'Muay Thai',
-                'description' => 'Master the art of striking with Muay Thai.',
-                'image' => '/templates/boxinggym/boxinggym1/assets/img/muaythai.jpg',
-            ],
-            [
-                'title' => 'Brazilian Jiu-Jitsu',
-                'description' => 'Get fit with our expert-led BJJ training.',
-                'image' => '/templates/boxinggym/boxinggym1/assets/img/ziozitso2.jpg',
-            ],
         ],
         'carousel' => [
             [
@@ -65,6 +63,7 @@ Route::get('/homepage', function () {
             'button_text' => 'Learn More',
             'button_link' => 'about.html',
         ],
+        'classes' => $classes,             
         'testimonials' => [
             [
                 'quote' => '"IronFist Gym changed my life! Amazing trainers and community."',
@@ -77,7 +76,6 @@ Route::get('/homepage', function () {
         ]
     ]);
 });
-
 
 Route::get('/about', function () {
     return response()->json([
@@ -129,112 +127,36 @@ Route::get('/about', function () {
 });
 
 
-Route::get('/classes', function () {
-    return response()->json([
-        'hero' => [
-            'title' => 'Our Classes',
-            'subtitle' => 'Find the perfect class to achieve your fitness and martial arts goals.'
-        ],
-        'classes' => [
-            [
-                'title' => 'Boxing',
-                'description' => 'Train like a champion with our boxing classes. Improve your strength, speed, and technique.',
-                'image' => 'https://placehold.co/400x300'
-            ],
-            [
-                'title' => 'Muay Thai',
-                'description' => 'Master the art of striking with our Muay Thai training programs.',
-                'image' => 'https://placehold.co/400x300'
-            ],
-            [
-                'title' => 'Brazilian Jiu-Jitsu',
-                'description' => 'Learn self-defense and improve your fitness with our BJJ classes.',
-                'image' => 'https://placehold.co/400x300'
-            ]
-        ],
-        'schedule' => [
-            'Monday' => [
-                ['class' => 'Boxing', 'time' => '6:00 PM - 7:30 PM'],
-                ['class' => 'BJJ', 'time' => '5:00 PM - 6:30 PM'],
-            ],
-            'Tuesday' => [
-                ['class' => 'Muay Thai', 'time' => '7:00 PM - 8:30 PM'],
-            ],
-            'Wednesday' => [
-                ['class' => 'Boxing', 'time' => '6:00 PM - 7:30 PM'],
-                ['class' => 'BJJ', 'time' => '5:00 PM - 6:30 PM'],
-            ],
-            'Thursday' => [
-                ['class' => 'Muay Thai', 'time' => '7:00 PM - 8:30 PM'],
-            ],
-            'Friday' => [
-                ['class' => 'Boxing', 'time' => '6:00 PM - 7:30 PM'],
-            ],
-            'Saturday' => [
-                ['class' => 'BJJ', 'time' => '10:00 AM - 11:30 AM'],
-            ],
-            'Sunday' => [
-                ['class' => 'Rest Day', 'time' => null]
-            ]
-        ],
-        'cta' => [
-            'title' => 'Ready to Join?',
-            'subtitle' => 'Sign up for a free trial class today and experience the IronFist Gym difference.',
-            'button' => 'Book a Free Trial'
-        ]
-    ]);
-});
-
-
-
 Route::get('/pricing', function () {
+
+    $plans = MembershipPlan::all()->map(function($plan) {
+        // Turn price + duration into a label, e.g. "$50/month" or "$499.99/year"
+        $period = $plan->duration_days === 365 ? 'year' : 'month';
+        $priceLabel = '$' . number_format($plan->price, 2) . '/' . $period;
+
+        // Split the description into features by commas
+        $features = array_map('trim', explode(',', $plan->description));
+
+        return [
+            'name'     => $plan->name,
+            'price'    => $priceLabel,
+            'features' => $features,
+        ];
+    });
+
+    // 2) Pull offers (if you want these dynamic too)
+    $offers = Offer::all()->map(fn($offer) => [
+        'title'       => $offer->title,
+        'description' => $offer->description,
+    ]);
+
     return response()->json([
         'hero' => [
             'title' => 'Membership Plans',
             'subtitle' => 'Choose the plan that fits your goals and budget.'
         ],
-        'plans' => [
-            [
-                'name' => 'Basic Plan',
-                'price' => '$50/month',
-                'features' => [
-                    'Access to 1 class per week',
-                    'Open gym hours',
-                    'Locker access',
-                ]
-            ],
-            [
-                'name' => 'Standard Plan',
-                'price' => '$80/month',
-                'features' => [
-                    'Access to 3 classes per week',
-                    'Open gym hours',
-                    'Locker access',
-                    'Free gym T-shirt',
-                ]
-            ],
-            [
-                'name' => 'Premium Plan',
-                'price' => '$120/month',
-                'features' => [
-                    'Unlimited classes',
-                    'Open gym hours',
-                    'Locker access',
-                    'Free gym T-shirt',
-                    'Personal training session (1/month)',
-                ]
-            ]
-        ],
-        'offers' => [
-            [
-                'title' => 'Student Discount',
-                'description' => 'Get 10% off any membership plan with a valid student ID.'
-            ],
-            [
-                'title' => 'Family Plan',
-                'description' => 'Sign up with a family member and each get 15% off your membership.'
-            ]
-        ],
+        'plans' => $plans,
+        'offers' => $offers,        
         'cta' => [
             'title' => 'Ready to Join?',
             'subtitle' => 'Sign up for a free trial class today and experience the [Your Gym Name] difference.'
@@ -383,6 +305,10 @@ Route::apiResource('lessons', LessonController::class)->only(['index', 'show']);
 //Route::apiResource('availability', AppointmentAvailabilityController::class)->only(['index', 'show']);
 Route::get('/availability', [AvailabilityController::class, 'index']);
 
+Route::apiResource('membership-plans', MembershipPlanController::class)->only(['index', 'show']);
+
+Route::apiResource('offers', OfferController::class)->only(['index', 'show']);
+
 
 
 // Protected write routes
@@ -396,7 +322,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('availability', AppointmentAvailabilityController::class)->except(['index', 'show']);    
     Route::apiResource('posts', PostController::class)->except(['index', 'show']);    //OK
     Route::apiResource('lessons', LessonController::class)->except(['index', 'show']);    //OK
-    
+    Route::apiResource('membership-plans', MembershipPlanController::class)->except(['index', 'show']);
+    Route::apiResource('offers', OfferController::class)->except(['index', 'show']);
 
 });
 

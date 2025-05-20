@@ -20,4 +20,18 @@ class Student extends Model
     {
         return $this->hasMany(Appointment::class);
     }
+
+    public function classes()
+    {
+        return $this->belongsToMany(
+            ClassModel::class,  // replace with your actual model name
+            'class_student',
+            'student_id',
+            'class_id'
+        )->withTimestamps();
+    }
+
+
+
+
 }

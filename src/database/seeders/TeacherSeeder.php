@@ -1,19 +1,37 @@
 <?php
+// database/seeders/TeacherSeeder.php
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Teacher;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class TeacherSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
+    public function run()
     {
-        Teacher::factory()->count(10)->create();
+        $now = Carbon::now();
 
+        DB::table('teachers')->insert([
+            [
+                'name'       => 'John Doe',
+                'email'      => 'john.doe@example.com',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'name'       => 'Jane Smith',
+                'email'      => 'jane.smith@example.com',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'name'       => 'Mike Johnson',
+                'email'      => 'mike.johnson@example.com',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+        ]);
     }
 }
