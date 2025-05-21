@@ -48,6 +48,7 @@ class DatabaseSeeder extends Seeder
          $this->call([
             UserSeeder::class,
             TeacherSeeder::class,    // ← first
+            StudentSeeder::class,    // ← then students
             LessonSeeder::class,     // ← then lessons
             ClassesTableSeeder::class,
             MembershipPlanSeeder::class,

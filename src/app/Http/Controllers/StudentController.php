@@ -9,7 +9,8 @@ class StudentController extends Controller
 {
     public function index()
     {
-        return response()->json(Student::with('team')->get());
+        // return response()->json(Student::with('team')->get());
+        return response()->json();
     }
 
     public function show($id)
@@ -25,7 +26,7 @@ class StudentController extends Controller
             'email' => 'required|email|unique:students,email',
             'phone' => 'nullable|string|max:20',
             'dob' => 'nullable|date',
-            'team_id' => 'nullable|exists:teams,id',
+            // 'team_id' => 'nullable|exists:teams,id',
         ]);
 
         // Attach the authenticated user's ID
