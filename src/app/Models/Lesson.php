@@ -18,5 +18,10 @@ class Lesson extends Model
     {
         return $this->belongsTo(Teacher::class);
     }
+    
+    public function teachers()
+    {
+        return $this->belongsToMany(Teacher::class);
+    }
 
 }

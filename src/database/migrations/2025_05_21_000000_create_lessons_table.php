@@ -12,8 +12,7 @@ return new class extends Migration {
             $table->string('title');
             $table->text('description')->nullable();
             $table->string('level')->nullable();
-            $table->string('image')->nullable();
-            $table->foreignId('teacher_id')->constrained()->onDelete('cascade');
+            $table->string('image')->nullable();            
             $table->timestamps();
         });
     }

@@ -52,9 +52,10 @@ class DatabaseSeeder extends Seeder
             LessonSeeder::class,     // ← then lessons
             ClassesTableSeeder::class,
             MembershipPlanSeeder::class,
-            OfferSeeder::class,
-            SubscriptionSeeder::class,
+            OfferSeeder::class,            
             PaymentSeeder::class,
+            LessonTeacherSeeder::class,
+
 
         ]);
 

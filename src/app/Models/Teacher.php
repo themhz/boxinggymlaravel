@@ -27,4 +27,10 @@ class Teacher extends Model
     {
         return $this->hasMany(ClassType::class);
     }
+
+    public function lessons()
+    {
+        return $this->belongsToMany(Lesson::class);
+    }
+
 }
