@@ -22,8 +22,7 @@ class TeacherFactory extends Factory
             'name' => $this->faker->name,
             'specialty' => $this->faker->randomElement(['Boxing', 'Muay Thai', 'BJJ']),
             'bio' => $this->faker->paragraph,
-            'photo' => null,
-            'team_id' => Team::factory(),
+            'photo' => null,            
             'user_id' => User::factory(),  // ← this line is required
 
         ];

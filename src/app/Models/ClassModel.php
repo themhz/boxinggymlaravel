@@ -18,18 +18,20 @@ class ClassModel extends Model
         return $this->belongsTo(Lesson::class);
     }
 
-    public function appointments()
+    public function teacher()
     {
-        return $this->hasMany(Appointment::class);
+        return $this->belongsTo(Teacher::class);
     }
 
-        public function students()
-        {
-            return $this->belongsToMany(
-                Student::class,
-                'class_student',
-                'class_id',
-                'student_id'
-            )->withTimestamps();
-        }
+
+    public function students()
+    {
+        return $this->belongsToMany(
+            Student::class,
+            'class_student',
+            'class_id',
+            'teacher_id',
+            'student_id'
+        )->withTimestamps();
+    }
 }

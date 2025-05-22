@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Models\Team;
 use App\Models\User;
 
 /**
@@ -22,8 +21,7 @@ class StudentFactory extends Factory
             'name' => $this->faker->name,
             'email' => $this->faker->unique()->safeEmail,
             'phone' => $this->faker->phoneNumber,
-            'dob' => $this->faker->date('Y-m-d', '-18 years'),
-            'team_id' => Team::factory(),
+            'dob' => $this->faker->date('Y-m-d', '-18 years'),           
             'user_id' => User::factory(),  // ← this line is required
         ];
     }

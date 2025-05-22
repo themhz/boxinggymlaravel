@@ -16,6 +16,7 @@ class ClassSeeder extends Seeder
     {
         $faker    = Faker::create();
         $lessonIds = DB::table('lessons')->pluck('id')->toArray();
+        $teacgerIds = DB::table('teachers')->pluck('id')->toArray();
         $days     = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
         $rows = [];
@@ -23,7 +24,7 @@ class ClassSeeder extends Seeder
         for ($i = 0; $i < 50; $i++) {
             // pick a random lesson
             $lessonId = $faker->randomElement($lessonIds);
-
+            $teacherId = $faker->randomElement($teacgerIds);
             // pick a random day
             $day = $faker->randomElement($days);
 
@@ -40,6 +41,7 @@ class ClassSeeder extends Seeder
 
             $rows[] = [
                 'lesson_id'  => $lessonId,
+                'teacher_id'  => $teacherId,
                 'start_time' => $start->format('H:i:s'),
                 'end_time'   => $end->format('H:i:s'),
                 'day'        => $day,

@@ -264,7 +264,7 @@ Route::post('/debug-reset', function () {
     return response()->json(['message' => 'You hit the API route!']);
 });
 
-Route::get('/classes/available', [ClassController::class, 'available']);
+//Route::get('/classes/available', [ClassController::class, 'available']);
 //Route::post('/availability', [AppointmentAvailabilityController::class, 'store']);
 
 
@@ -324,7 +324,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('lessons', LessonController::class)->except(['index', 'show']);    //OK
     Route::apiResource('membership-plans', MembershipPlanController::class)->except(['index', 'show']);
     Route::apiResource('offers', OfferController::class)->except(['index', 'show']);
-
 });
 
 if (app()->environment(['local', 'testing'])) {

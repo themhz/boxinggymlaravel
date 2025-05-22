@@ -19,8 +19,7 @@ class AppointmentFactory extends Factory
     public function definition()
     {
         return [
-            'student_id' => Student::factory(),
-            'program_id' => Program::factory(),
+            'student_id' => Student::factory(),            
             'status' => 'booked',
             'notes' => $this->faker->optional()->sentence,
         ];

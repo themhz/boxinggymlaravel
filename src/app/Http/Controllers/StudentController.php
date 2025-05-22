@@ -49,8 +49,7 @@ class StudentController extends Controller
             'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|email|unique:students,email,' . $student->id,
             'phone' => 'sometimes|string|max:20',
-            'dob' => 'sometimes|date',
-            'team_id' => 'nullable|exists:teams,id',
+            'dob' => 'sometimes|date',            
         ]);
 
         $student->update($validated);

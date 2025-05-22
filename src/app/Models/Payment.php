@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Offer;
 
 class Payment extends Model
 {
@@ -12,6 +13,7 @@ class Payment extends Model
     protected $fillable = [
         'user_id',
         'subscription_id',
+        'offer_id',
         'start_date',
         'end_date',
         'amount',
@@ -26,5 +28,9 @@ class Payment extends Model
     public function subscription()
     {
         return $this->belongsTo(Subscription::class);
+    }
+    public function offer()
+    {
+        return $this->belongsTo(Offer::class);
     }
 }

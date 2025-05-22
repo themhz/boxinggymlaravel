@@ -6,6 +6,7 @@ use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\AppointmentAvailability;
+use App\Models\ClassException;
 use Database\Seeders\AppointmentAvailabilitySeeder;
 
 class DatabaseSeeder extends Seeder
@@ -50,12 +51,14 @@ class DatabaseSeeder extends Seeder
             TeacherSeeder::class,    // ← first
             StudentSeeder::class,    // ← then students
             LessonSeeder::class,     // ← then lessons
-            ClassesTableSeeder::class,
+            ClassSeeder::class,
             MembershipPlanSeeder::class,
             OfferSeeder::class,            
             PaymentSeeder::class,
             LessonTeacherSeeder::class,
-
+            ClassExceptionsTableSeeder::class,
+            ClassSessionsTableSeeder::class,
+            AttendancesTableSeeder::class,
 
         ]);
 

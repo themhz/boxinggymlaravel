@@ -19,10 +19,8 @@ return new class extends Migration {
             // Link to users table
             $table->unsignedBigInteger('user_id')->nullable();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-
-            // Link to teams table (optional)
-            $table->unsignedBigInteger('team_id')->nullable();
-            $table->foreign('team_id')->references('id')->on('teams')->onDelete('set null');
+            
+            
 
             $table->timestamps();
         });
