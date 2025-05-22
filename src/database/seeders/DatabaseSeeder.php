@@ -53,6 +53,9 @@ class DatabaseSeeder extends Seeder
             ClassesTableSeeder::class,
             MembershipPlanSeeder::class,
             OfferSeeder::class,
+            SubscriptionSeeder::class,
+            PaymentSeeder::class,
+
         ]);
 
     }
