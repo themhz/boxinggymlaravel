@@ -20,6 +20,13 @@ class Student extends Model
         )->withTimestamps();
     }
 
+    public function exercises()
+    {
+        return $this->belongsToMany(Exercise::class, 'student_exercise')
+                    ->withTimestamps();
+    }
+
+
 
 
 
