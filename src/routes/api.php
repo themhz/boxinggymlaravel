@@ -19,112 +19,11 @@ use App\Http\Controllers\MembershipPlanController;
 use App\Http\Controllers\OfferController;
 use App\Models\MembershipPlan;
 use App\Models\Offer;
+use App\Http\Controllers\Bff\HomepageBffController;
 
-Route::get('/homepage', function () {
-    // Grab the first 3 lessons (or whatever logic you prefer)
-    $classes = Lesson::take(3)->get()->map(function ($lesson) {
-        return [
-            'title'       => $lesson->title,
-            'description' => $lesson->description,
-            // Adjust this if you store images elsewhere; asset() will generate a full URL
-            'image'       => $lesson->image,
-        ];
-    });
 
-    return response()->json([
-        'hero' => [
-            'headline' => 'Welcome to IronFist Gym',
-            'subtext' => 'Train your body and mind with top-tier martial arts coaching.',
-            'cta_text' => 'Join a Class',
-            'cta_link' => 'classes.html',
-            'alt_text' => 'Book Free Trial',
-            'alt_link' => 'appointment.html',
-        ],
-        'carousel' => [
-            [
-                'video' => '/templates/boxinggym/boxinggym1/assets/video/video1.mp4',
-                'title' => 'Boxing Classes',
-                'description' => 'Train like a champion with our boxing classes.',
-            ],
-            [
-                'video' => '/templates/boxinggym/boxinggym1/assets/video/video2.mp4',
-                'title' => 'Muay Thai Training',
-                'description' => 'Master the art of striking with our Muay Thai training.',
-            ],
-            [
-                'video' => '/templates/boxinggym/boxinggym1/assets/video/video3.mp4',
-                'title' => 'Brazilian Jiu-Jitsu',
-                'description' => 'Learn self-defense and improve your fitness with BJJ.',
-            ],
-        ],
-        'about' => [
-            'title' => 'About Our Gym',
-            'description' => 'At IronFist Gym, we help you achieve your fitness and martial arts goals. Our instructors and community make it the perfect place to grow.',
-            'button_text' => 'Learn More',
-            'button_link' => 'about.html',
-        ],
-        'classes' => $classes,             
-        'testimonials' => [
-            [
-                'quote' => '"IronFist Gym changed my life! Amazing trainers and community."',
-                'author' => 'John Doe',
-            ],
-            [
-                'quote' => '"I love the variety of classes and friendly atmosphere!"',
-                'author' => 'Jane Smith',
-            ],
-        ]
-    ]);
-});
 
-Route::get('/about', function () {
-    return response()->json([
-        'hero' => [
-            'title' => 'About IronFist Gym',
-            'subtitle' => 'Where Passion Meets Discipline'
-        ],
-        'story' => [
-            'title' => 'Our Story',
-            'intro' => 'Founded in 2015, IronFist Gym was born out of a passion for martial arts and a desire to create a community where everyone feels welcome. Whether you\'re a beginner or a seasoned fighter, we’re here to help you achieve your goals.',
-            'mission' => 'Our gym is more than just a place to train—it’s a family. We believe in the power of martial arts to transform lives, build confidence, and foster discipline.',
-            'image' => 'https://placehold.co/600x400'
-        ],
-        'team' => [
-            [
-                'name' => 'John Doe',
-                'role' => 'Head Boxing Coach',
-                'description' => 'With over 10 years of experience, John has trained champions and beginners alike.',
-                'image' => 'https://placehold.co/300x300'
-            ],
-            [
-                'name' => 'Jane Smith',
-                'role' => 'Muay Thai Specialist',
-                'description' => 'Jane brings a wealth of knowledge and a passion for teaching Muay Thai.',
-                'image' => 'https://placehold.co/300x300'
-            ],
-            [
-                'name' => 'Mike Johnson',
-                'role' => 'BJJ Black Belt',
-                'description' => 'Mike is dedicated to helping students master the art of Brazilian Jiu-Jitsu.',
-                'image' => 'https://placehold.co/300x300'
-            ]
-        ],
-        'why_choose_us' => [
-            [
-                'title' => 'Expert Instructors',
-                'description' => 'Our coaches are highly trained and passionate about helping you succeed.'
-            ],
-            [
-                'title' => 'State-of-the-Art Facilities',
-                'description' => 'Train in a clean, modern, and fully equipped gym.'
-            ],
-            [
-                'title' => 'Supportive Community',
-                'description' => 'Join a welcoming community that motivates and inspires you.'
-            ]
-        ]
-    ]);
-});
+
 
 
 Route::get('/pricing', function () {
