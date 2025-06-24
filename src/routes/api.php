@@ -18,15 +18,6 @@ use App\Models\Lesson;
 use App\Http\Controllers\MembershipPlanController;
 use App\Http\Controllers\OfferController;
 
-Route::get('/appointments/availability', function () {
-    return response()->json([
-        "09:00" => [ "Mon" => true,  "Tue" => true,  "Wed" => false, "Thu" => true,  "Fri" => true,  "Sat" => false, "Sun" => false ],
-        "10:00" => [ "Mon" => true,  "Tue" => false, "Wed" => true,  "Thu" => true,  "Fri" => false, "Sat" => true,  "Sun" => false ],
-        "11:00" => [ "Mon" => false, "Tue" => true,  "Wed" => true,  "Thu" => false, "Fri" => true,  "Sat" => true,  "Sun" => false ],
-        "12:00" => [ "Mon" => true,  "Tue" => true,  "Wed" => true,  "Thu" => true,  "Fri" => true,  "Sat" => false, "Sun" => false ],
-        "12:55" => [ "Mon" => true,  "Tue" => false,  "Wed" => false,  "Thu" => false,  "Fri" => false,  "Sat" => false, "Sun" => false ],        
-    ]);
-});
 
 
 Route::post('/appointments/book', function (Request $request) {
