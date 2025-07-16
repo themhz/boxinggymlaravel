@@ -27,7 +27,7 @@ services:
     ports:
       - 3307:3306
     environment:
-      MYSQL_DATABASE: laravel
+      MYSQL_DATABASE: boxing_gym
       MYSQL_ROOT_PASSWORD: root
       MYSQL_USER: laravel
       MYSQL_PASSWORD: laravel

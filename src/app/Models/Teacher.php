@@ -16,18 +16,22 @@ class Teacher extends Model
         'photo',
     ];
 
+   public function lessons()
+{
+    return $this->belongsToMany(Lesson::class, 'lesson_teacher');
+}
 
-
-
-    public function lessons()
-    {
-        return $this->belongsToMany(Lesson::class);
-    }
 
     public function classes()
     {
         return $this->hasMany(ClassModel::class); // Replace ClassModel with your actual model class name
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
 
 
 }

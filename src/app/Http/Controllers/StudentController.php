@@ -9,14 +9,34 @@ class StudentController extends Controller
 {
     public function index()
     {
-        // return response()->json(Student::with('team')->get());
-        return response()->json();
+        $students = Student::with('user')->get();
+
+        return response()->json($students);
     }
 
     public function show($id)
     {
-        $student = Student::with('team')->findOrFail($id);
+        $student = Student::with('user')->findOrFail($id);
         return response()->json($student);
+    }
+
+    public function studentLessons($id)
+    {
+        $student = Student::with('classes.lesson')->findOrFail($id);
+
+        $uniqueLessons = $student->classes
+            ->map(fn($class) => $class->lesson)
+            ->unique('id')
+            ->values()
+            ->map(fn($lesson) => [
+                'id'          => $lesson->id,
+                'title'       => $lesson->title,
+                'description' => $lesson->description,
+                'level'       => $lesson->level,
+                'image'       => $lesson->image,
+            ]);
+
+        return response()->json($uniqueLessons);
     }
 
     public function store(Request $request)

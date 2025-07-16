@@ -9,14 +9,39 @@ class LessonController extends Controller
 {
     public function index()
     {
-        return response()->json(Lesson::with('teacher')->get());
+        return response()->json(
+            Lesson::select(['id', 'title', 'description', 'level', 'image'])->get()
+        );
     }
 
+    
     public function show($id)
     {
-        $lesson = Lesson::with('teacher')->findOrFail($id);
+        $lesson = Lesson::findOrFail($id);
         return response()->json($lesson);
     }
+
+    public function withTeachers()
+    {
+        $lessons = Lesson::with('teachers')->get()->map(function ($lesson) {
+            return [
+                'id'          => $lesson->id,
+                'title'       => $lesson->title,
+                'description' => $lesson->description,
+                'level'       => $lesson->level,
+                'image'       => $lesson->image,
+                'teachers'    => $lesson->teachers->unique('id')->map(fn($t) => [
+                    'id'    => $t->id,
+                    'name'  => $t->name,
+                    'email' => $t->email,
+                ])->values()
+            ];
+        });
+
+        return response()->json($lessons);
+    }
+
+
 
     public function store(Request $request)
     {

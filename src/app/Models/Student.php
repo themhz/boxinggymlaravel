@@ -14,9 +14,11 @@ class Student extends Model
     public function classes()
     {
         return $this->belongsToMany(
-            ClassModel::class,  // replace with your actual model name
+            ClassModel::class, 
             'class_student',
-            'student_id',            
+            'student_id',      
+            'class_id',
+      
         )->withTimestamps();
     }
 
@@ -27,7 +29,10 @@ class Student extends Model
     }
 
 
-
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
 
 }

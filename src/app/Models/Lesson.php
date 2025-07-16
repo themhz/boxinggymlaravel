@@ -14,10 +14,6 @@ class Lesson extends Model
     {
         return $this->hasMany(ClassModel::class); // assuming ClassModel is your renamed Program
     }
-    public function teacher()
-    {
-        return $this->belongsTo(Teacher::class);
-    }
     
     public function teachers()
     {

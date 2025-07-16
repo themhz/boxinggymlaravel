@@ -17,6 +17,7 @@ use App\Http\Controllers\LessonController;
 use App\Models\Lesson;
 use App\Http\Controllers\MembershipPlanController;
 use App\Http\Controllers\OfferController;
+use App\Http\Controllers\UserController;
 
 
 
@@ -138,14 +139,28 @@ Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $requ
 
 
 // Publicly readable routes
-Route::apiResource('teams', TeamController::class)->only(['index', 'show']);
-Route::apiResource('teachers', TeacherController::class)->only(['index', 'show']);
+Route::apiResource('classes', controller: ClassController::class)->only(['index', 'show']);
+Route::get('classes-schedule', [ClassController::class, 'schedule']); // for schedule
+Route::apiResource('lessons', LessonController::class)->only(['index', 'show']);
+Route::get('lessons-teachers', [LessonController::class, 'withTeachers']);
 Route::apiResource('students', StudentController::class)->only(['index', 'show']);
-Route::apiResource('class-types', ClassTypeController::class)->only(['index', 'show']);
-Route::apiResource('classes', ClassController::class)->only(['index', 'show']);
+Route::get('students/{id}/lessons', [StudentController::class, 'studentLessons']);
+
+Route::apiResource('teachers', TeacherController::class)->only(['index', 'show']);
+Route::get('teachers/{id}/lessons', [TeacherController::class, 'lessons']);
+
+Route::get('/users', [UserController::class, 'index']);
+Route::get('/users/{id}', [UserController::class, 'show']);
+
+
+
+
+
+
+
 Route::apiResource('appointments', AppointmentController::class)->only(['index', 'show']);
 Route::apiResource('posts', PostController::class)->only(['index', 'show']);
-Route::apiResource('lessons', LessonController::class)->only(['index', 'show']);
+
 //Route::apiResource('availability', AppointmentAvailabilityController::class)->only(['index', 'show']);
 Route::get('/availability', [AvailabilityController::class, 'index']);
 
@@ -160,7 +175,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('teams', TeamController::class)->except(['index', 'show']);
     Route::apiResource('teachers', TeacherController::class)->except(['index', 'show']);
     Route::apiResource('students', StudentController::class)->except(['index', 'show']); //Working on
-    Route::apiResource('class-types', ClassTypeController::class)->except(['index', 'show']);
+    //Route::apiResource('class-types', ClassTypeController::class)->except(['index', 'show']);
     Route::apiResource('classes', ClassController::class)->except(['index', 'show']);
     Route::apiResource('appointments', AppointmentController::class)->except(['index', 'show']);
     Route::apiResource('availability', AppointmentAvailabilityController::class)->except(['index', 'show']);    

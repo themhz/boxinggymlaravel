@@ -9,14 +9,31 @@ class TeacherController extends Controller
 {
     public function index()
     {
-        return response()->json(Teacher::with('team')->get());
+        return Teacher::with('user')->get(); // ✅ no 'team' relationship
     }
 
     public function show($id)
     {
-        $teacher = Teacher::with('team')->findOrFail($id);
+        $teacher = Teacher::with('user')->findOrFail($id);
         return response()->json($teacher);
     }
+
+    public function lessons($id)
+    {
+        $teacher = Teacher::with('lessons')->findOrFail($id);
+
+        $lessons = $teacher->lessons->map(fn($lesson) => [
+            'id'          => $lesson->id,
+            'title'       => $lesson->title,
+            'description' => $lesson->description,
+            'level'       => $lesson->level,
+            'image'       => $lesson->image,
+        ]);
+
+        return response()->json($lessons);
+    }
+
+
 
     public function store(Request $request)
     {

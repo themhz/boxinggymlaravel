@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->string('email')->unique();
             $table->string('phone')->nullable();
             $table->date('dob')->nullable();
+            $table->string('image')->nullable();
 
             // Link to users table
             $table->unsignedBigInteger('user_id')->nullable();

@@ -22,7 +22,9 @@ class StudentFactory extends Factory
             'email' => $this->faker->unique()->safeEmail,
             'phone' => $this->faker->phoneNumber,
             'dob' => $this->faker->date('Y-m-d', '-18 years'),           
-            'user_id' => User::factory(),  // ← this line is required
+            'user_id' => User::factory(), 
+            'image' => 'https://i.pravatar.cc/150?img=' . rand(1, 70),
+
         ];
     }
 }

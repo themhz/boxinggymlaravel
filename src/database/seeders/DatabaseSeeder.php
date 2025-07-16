@@ -49,7 +49,7 @@ class DatabaseSeeder extends Seeder
          $this->call([
             UserSeeder::class,
             TeacherSeeder::class,    // ← first
-            StudentSeeder::class,    // ← then students
+            StudentSeeder::class,    // ← then students            
             LessonSeeder::class,     // ← then lessons
             ClassSeeder::class,
             MembershipPlanSeeder::class,
@@ -59,6 +59,8 @@ class DatabaseSeeder extends Seeder
             ClassExceptionsTableSeeder::class,
             ClassSessionsTableSeeder::class,
             AttendancesTableSeeder::class,
+            LessonTeacherSeeder::class,
+            ClassStudentSeeder::class,
 
         ]);
 
