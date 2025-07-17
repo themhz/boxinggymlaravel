@@ -13,13 +13,13 @@ class AppointmentController extends Controller
     public function index()
     {
         return response()->json(
-            Appointment::with(['student', 'class.classType'])->get()
+            Appointment::with(['student'])->get()
         );
     }
 
     public function show($id)
     {
-        $appointment = Appointment::with(['student', 'class.classType'])->findOrFail($id);
+        $appointment = Appointment::with(['student'])->findOrFail($id);
         return response()->json($appointment);
     }
 

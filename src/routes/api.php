@@ -152,19 +152,15 @@ Route::get('teachers/{id}/lessons', [TeacherController::class, 'lessons']);
 Route::get('/users', [UserController::class, 'index']);
 Route::get('/users/{id}', [UserController::class, 'show']);
 
+Route::apiResource('membership-plans', MembershipPlanController::class)->only(['index', 'show']);
 
-
-
-
-
-
-Route::apiResource('appointments', AppointmentController::class)->only(['index', 'show']);
-Route::apiResource('posts', PostController::class)->only(['index', 'show']);
+//Route::apiResource('appointments', AppointmentController::class)->only(['index', 'show']);
+//Route::apiResource('posts', PostController::class)->only(['index', 'show']);
 
 //Route::apiResource('availability', AppointmentAvailabilityController::class)->only(['index', 'show']);
-Route::get('/availability', [AvailabilityController::class, 'index']);
+//Route::get('/availability', [AvailabilityController::class, 'index']);
 
-Route::apiResource('membership-plans', MembershipPlanController::class)->only(['index', 'show']);
+
 
 Route::apiResource('offers', OfferController::class)->only(['index', 'show']);
 
