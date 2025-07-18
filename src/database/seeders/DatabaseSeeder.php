@@ -53,14 +53,15 @@ class DatabaseSeeder extends Seeder
             LessonSeeder::class,     // ← then lessons
             ClassSeeder::class,
             MembershipPlanSeeder::class,
-            OfferSeeder::class,            
+            OfferSeeder::class,       
+            PaymentTypesTableSeeder::class,     
             PaymentSeeder::class,
             LessonTeacherSeeder::class,
             ClassExceptionsTableSeeder::class,
             ClassSessionsTableSeeder::class,
             AttendancesTableSeeder::class,
             LessonTeacherSeeder::class,
-            ClassStudentSeeder::class,
+            ClassStudentSeeder::class,            
 
         ]);
 

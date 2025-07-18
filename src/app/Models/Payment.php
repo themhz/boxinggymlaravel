@@ -33,4 +33,13 @@ class Payment extends Model
     {
         return $this->belongsTo(Offer::class);
     }
+    public function paymentType()
+    {
+        return $this->belongsTo(PaymentType::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
 }
