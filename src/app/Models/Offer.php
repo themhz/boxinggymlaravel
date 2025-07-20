@@ -29,4 +29,10 @@ class Offer extends Model
         return (!$this->starts_at || $this->starts_at <= $today)
             && (!$this->ends_at   || $this->ends_at   >= $today);
     }
+
+    public function membershipPlan()
+    {
+        return $this->belongsTo(\App\Models\MembershipPlan::class);
+    }
 }
+

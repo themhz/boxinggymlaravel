@@ -6,13 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Offer;
 
-class Payment extends Model
+class StudentPayment extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'user_id',
-        'subscription_id',
+        'payment_method_id',
+        'membership_plan_id',
         'offer_id',
         'start_date',
         'end_date',
@@ -25,6 +26,12 @@ class Payment extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function membershipPlan()
+    {
+        return $this->belongsTo(MembershipPlan::class);
+    }
+
+
     public function subscription()
     {
         return $this->belongsTo(Subscription::class);
@@ -33,13 +40,13 @@ class Payment extends Model
     {
         return $this->belongsTo(Offer::class);
     }
-    public function paymentType()
+    public function paymentMethod()
     {
-        return $this->belongsTo(PaymentType::class);
+        return $this->belongsTo(PaymentMethod::class);
     }
 
     public function payments()
     {
-        return $this->hasMany(Payment::class);
+        return $this->hasMany(StudentPayment::class);
     }
 }

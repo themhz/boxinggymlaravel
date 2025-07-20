@@ -18,6 +18,8 @@ use App\Models\Lesson;
 use App\Http\Controllers\MembershipPlanController;
 use App\Http\Controllers\OfferController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\StudentPaymentController;
+use App\Http\Controllers\PaymentMethodController;
 
 
 
@@ -153,16 +155,17 @@ Route::get('/users', [UserController::class, 'index']);
 Route::get('/users/{id}', [UserController::class, 'show']);
 
 Route::apiResource('membership-plans', MembershipPlanController::class)->only(['index', 'show']);
-
-//Route::apiResource('appointments', AppointmentController::class)->only(['index', 'show']);
-//Route::apiResource('posts', PostController::class)->only(['index', 'show']);
-
-//Route::apiResource('availability', AppointmentAvailabilityController::class)->only(['index', 'show']);
-//Route::get('/availability', [AvailabilityController::class, 'index']);
-
-
-
 Route::apiResource('offers', OfferController::class)->only(['index', 'show']);
+
+
+//Route::apiResource('student-payments', StudentPaymentController::class)->only(['index', 'show']);
+// All payments of a specific student
+Route::get('/students/{user}/payments', [StudentPaymentController::class, 'byStudent']);
+
+// A specific payment of a student
+Route::get('/students/{user}/payments/{payment}', [StudentPaymentController::class, 'studentPaymentShow']);
+
+Route::get('/payment-methods', [PaymentMethodController::class, 'index']);
 
 
 

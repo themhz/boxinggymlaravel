@@ -11,14 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('payments', function (Blueprint $table) {
+        Schema::create('student_payments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');            
-            $table->foreignId('membership_plan_id')->constrained()->onDelete('cascade');
-            $table->foreignId('offer_id')->constrained()->onDelete('cascade');
-            $table->foreignId('payment_type_id')->constrained()->onDelete('cascade');
+
+            // 🔧 Make these nullable
+            $table->foreignId('membership_plan_id')->nullable()->constrained()->onDelete('cascade');
+            $table->foreignId('offer_id')->nullable()->constrained()->onDelete('cascade');
+            $table->foreignId('payment_method_id')->constrained('payment_methods')->onDelete('cascade');
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
+
             $table->decimal('amount', 8, 2);
             $table->timestamps();
         });
@@ -29,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('payments');
+        Schema::dropIfExists('student_payments');
     }
 };
