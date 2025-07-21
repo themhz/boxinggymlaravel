@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ClassSession;
 use App\Models\ClassModel;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class ClassSessionController extends Controller
 {
@@ -58,4 +59,17 @@ class ClassSessionController extends Controller
         return redirect()->route('sessions.index')
                          ->with('success', 'Session deleted.');
     }
+
+    public function apiIndex(): JsonResponse
+    {
+        $sessions = ClassSession::with([
+            'attendances.student',
+            'exercises.exercise',
+            'relatedClass.lesson',  // ✅ correct relationship name
+        ])->get();
+
+        return response()->json($sessions);
+    }
+
+
 }

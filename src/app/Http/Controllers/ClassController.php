@@ -8,16 +8,9 @@ use Illuminate\Http\JsonResponse;
 use App\Models\ClassSession; // your model
 
 class ClassController extends Controller
-{
-    // public function index()
-    // {
-    //     return response()->json(ClassModel::with('lesson')->get());
-    // }
-
+{    
     public function index(): JsonResponse
-    {
-        // Eager-load the lesson relation
-        //$classes = ClassModel::with('lesson')->get();
+    {     
         $classes = ClassModel::with(['lesson', 'teacher'])->get()
             ->map(fn($c) => [
                 'id'         => $c->id,
@@ -44,41 +37,7 @@ class ClassController extends Controller
                 'classes' => $classes,
             ]);
         
-        // // eager-load the lesson relation once
-        // $classes = ClassModel::with('lesson')->get();
-
-        // // 1) offerings: one entry per lesson
-        // $offerings = $classes
-        //     ->map(fn($c) => [
-        //         'id'          => $c->lesson->id,
-        //         'title'       => $c->lesson->title,
-        //         'description' => $c->lesson->description,
-        //         'image'       => $c->lesson->image,
-        //     ])
-        //     ->unique('id')
-        //     ->values();
-
-        // // 2) schedule: group by day
-        // $schedule = $classes
-        //     ->groupBy('day')
-        //     ->mapWithKeys(function($group, $day) {
-        //         // for each day, map to an array of sessions
-        //         return [
-        //             $day => $group
-        //                 ->map(fn($c) => [
-        //                     'class'     => $c->lesson->title,
-        //                     'start_time'=> $c->start_time,
-        //                     'end_time'  => $c->end_time,
-        //                     'capacity'  => $c->capacity,
-        //                 ])
-        //                 ->values()
-        //         ];
-        //     });
-
-        // return response()->json([
-        //     'offerings' => $offerings,
-        //     'schedule'  => $schedule,
-        // ]);
+       
     }
 
     public function schedule(): JsonResponse
@@ -172,4 +131,16 @@ class ClassController extends Controller
                 ->get()
         );
     }
+
+    // public function students(ClassModel $class)
+    // {
+    //     return response()->json($class->students);
+    // }
+
+    public function students($id)
+    {
+        $class = ClassModel::findOrFail($id);
+        return response()->json($class->students);
+    }
+
 }

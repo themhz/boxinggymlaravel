@@ -20,16 +20,30 @@ class ClassSession extends Model
 
     public function class()
     {
-        return $this->belongsTo(\App\Models\ClassModel::class);
+        return $this->belongsTo(ClassModel::class, 'class_id');
     }
 
     public function attendances()
     {
         return $this->hasMany(Attendance::class, 'session_id');
     }
+    // public function exercises()
+    // {
+    //     return $this->belongsToMany(Exercise::class, 'session_exercise')
+    //                 ->withTimestamps();
+    // }
+
     public function exercises()
     {
-        return $this->belongsToMany(Exercise::class, 'session_exercise')
-                    ->withTimestamps();
+        return $this->hasMany(SessionExercise::class, 'session_id');
     }
+
+
+    // In ClassSession.php
+    public function relatedClass()
+    {
+        return $this->belongsTo(ClassModel::class, 'class_id');
+    }
+
+
 }

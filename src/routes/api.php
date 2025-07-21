@@ -20,6 +20,8 @@ use App\Http\Controllers\OfferController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\StudentPaymentController;
 use App\Http\Controllers\PaymentMethodController;
+use App\Models\ClassModel;
+use App\Http\Controllers\ClassSessionController;
 
 
 
@@ -141,8 +143,19 @@ Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $requ
 
 
 // Publicly readable routes
-Route::apiResource('classes', controller: ClassController::class)->only(['index', 'show']);
+Route::apiResource('classes', controller: ClassController::class)->only(['index']);
+
+//Route::get('/classes/{class}/students', [ClassController::class, 'students']);
+
+Route::prefix('classes')->group(function () {
+    Route::get('{id}/students', [ClassController::class, 'students']);
+    Route::get('{id}', function ($id) {
+        return ClassModel::with(['teacher', 'students', 'lesson'])->findOrFail($id);
+    });
+});
 Route::get('classes-schedule', [ClassController::class, 'schedule']); // for schedule
+
+
 Route::apiResource('lessons', LessonController::class)->only(['index', 'show']);
 Route::get('lessons-teachers', [LessonController::class, 'withTeachers']);
 Route::apiResource('students', StudentController::class)->only(['index', 'show']);
@@ -166,6 +179,8 @@ Route::get('/students/{user}/payments', [StudentPaymentController::class, 'byStu
 Route::get('/students/{user}/payments/{payment}', [StudentPaymentController::class, 'studentPaymentShow']);
 
 Route::get('/payment-methods', [PaymentMethodController::class, 'index']);
+
+Route::get('/sessions', [ClassSessionController::class, 'apiIndex']);
 
 
 
