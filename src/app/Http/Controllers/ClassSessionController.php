@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ClassSession;
 use App\Models\ClassModel;
+use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -70,6 +71,76 @@ class ClassSessionController extends Controller
 
         return response()->json($sessions);
     }
+    
+    // GET /api/classes-sessions
+    public function apiClassesWithSessions(): JsonResponse
+    {
+        $classes = ClassModel::with([
+            'sessions.relatedClass.lesson',
+            'sessions.attendances.student',
+            'sessions.exercises.exercise',
+        ])->get();
+
+        return response()->json($classes);
+    }
+
+    // GET /api/classes-sessions/{id}
+    public function apiClassSessionsById(int $id): JsonResponse
+    {
+        $class = ClassModel::with([
+            'sessions.relatedClass.lesson',
+            'sessions.attendances.student',
+            'sessions.exercises.exercise',
+        ])->findOrFail($id);
+
+        return response()->json($class);
+    }
+
+    public function apiStudentAttendance($id): JsonResponse
+    {
+        $student = Student::with([
+            'attendances.session.relatedClass.lesson'
+        ])->findOrFail($id);
+
+        // Optional: transform for cleaner output
+        $data = [
+            'student' => $student->name,
+            'attendances' => $student->attendances->map(function ($a) {
+                return [
+                    'session_date' => $a->session->session_date,
+                    'status' => $a->status,
+                    'lesson' => optional($a->session->relatedClass->lesson)->title,
+                    'day' => optional($a->session->relatedClass)->day,
+                    'start_time' => optional($a->session->relatedClass)->start_time,
+                ];
+            }),
+        ];
+
+        return response()->json($data);
+    }
+
+    public function apiStudentExercises($id): JsonResponse
+    {
+        $student = Student::with('exercises')->findOrFail($id);
+
+        $exercises = $student->exercises ?? collect(); // fallback to empty collection
+
+        $data = [
+            'student' => $student->name,
+            'exercises' => $exercises->map(function ($e) {
+                return [
+                    'name' => $e->name,
+                    'description' => $e->description,
+                    'sets' => $e->sets,
+                    'reps' => $e->repetitions,
+                ];
+            }),
+        ];
+
+        return response()->json($data);
+    }
+
+
 
 
 }

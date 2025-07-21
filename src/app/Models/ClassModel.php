@@ -40,9 +40,13 @@ class ClassModel extends Model
     }
 
     // Each class has many sessions
+    // public function sessions()
+    // {
+    //     return $this->hasMany(ClassSession::class);
+    // }
     public function sessions()
     {
-        return $this->hasMany(ClassSession::class);
+        return $this->hasMany(ClassSession::class, 'class_id');
     }
 
     // Each class can have exceptions (like cancelled or rescheduled sessions)

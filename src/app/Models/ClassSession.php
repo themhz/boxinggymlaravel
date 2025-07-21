@@ -36,14 +36,14 @@ class ClassSession extends Model
     public function exercises()
     {
         return $this->hasMany(SessionExercise::class, 'session_id');
-    }
-
+    }    
 
     // In ClassSession.php
     public function relatedClass()
     {
         return $this->belongsTo(ClassModel::class, 'class_id');
     }
+    
 
 
 }

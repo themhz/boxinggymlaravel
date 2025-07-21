@@ -154,7 +154,8 @@ Route::prefix('classes')->group(function () {
     });
 });
 Route::get('classes-schedule', [ClassController::class, 'schedule']); // for schedule
-
+Route::get('classes-sessions', [ClassSessionController::class, 'apiClassesWithSessions']);
+Route::get('classes-sessions/{id}', [ClassSessionController::class, 'apiClassSessionsById']);
 
 Route::apiResource('lessons', LessonController::class)->only(['index', 'show']);
 Route::get('lessons-teachers', [LessonController::class, 'withTeachers']);
@@ -177,6 +178,9 @@ Route::get('/students/{user}/payments', [StudentPaymentController::class, 'byStu
 
 // A specific payment of a student
 Route::get('/students/{user}/payments/{payment}', [StudentPaymentController::class, 'studentPaymentShow']);
+Route::get('/students/{id}/attendance', [ClassSessionController::class, 'apiStudentAttendance']);
+Route::get('/students/{id}/exercises', [ClassSessionController::class, 'apiStudentExercises']);
+
 
 Route::get('/payment-methods', [PaymentMethodController::class, 'index']);
 

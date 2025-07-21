@@ -24,14 +24,21 @@ class Student extends Model
 
     public function exercises()
     {
-        return $this->belongsToMany(Exercise::class, 'student_exercise')
-                    ->withTimestamps();
+        //return $this->belongsToMany(Exercise::class, 'student_exercise')->withTimestamps();
+        //return $this->belongsToMany(Exercise::class, 'exercises')->withTimestamps();
+        return $this->belongsToMany(Exercise::class, 'student_exercise', 'student_id', 'exercise_id')
+                ->withTimestamps();
     }
 
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class, 'student_id');
     }
 
 
