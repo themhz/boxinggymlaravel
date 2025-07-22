@@ -22,6 +22,7 @@ use App\Http\Controllers\StudentPaymentController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Models\ClassModel;
 use App\Http\Controllers\ClassSessionController;
+use App\Http\Controllers\ExerciseController;
 
 
 
@@ -186,7 +187,8 @@ Route::get('/payment-methods', [PaymentMethodController::class, 'index']);
 
 Route::get('/sessions', [ClassSessionController::class, 'apiIndex']);
 
-
+Route::get('/exercises', [ExerciseController::class, 'apiIndex']);
+Route::get('/exercises/{id}', [ExerciseController::class, 'apiShow']);
 
 // Protected write routes
 Route::middleware('auth:sanctum')->group(function () {

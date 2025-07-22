@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             TeacherSeeder::class,    
             StudentSeeder::class,
             PaymentMethodsTableSeeder::class, 
+            //SubscriptionSeeder::class,
             MembershipPlanSeeder::class,
             OfferSeeder::class,
             LessonSeeder::class,
@@ -29,7 +30,10 @@ class DatabaseSeeder extends Seeder
             ClassExceptionsTableSeeder::class,
             ClassSessionsTableSeeder::class,
             AttendancesTableSeeder::class,
-            ClassStudentSeeder::class,          
+            ClassStudentSeeder::class,
+            ExerciseSeeder::class,
+            StudentExerciseSeeder::class,
+
         ]);
 
     }

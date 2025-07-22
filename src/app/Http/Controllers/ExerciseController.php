@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Exercise;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class ExerciseController extends Controller
 {
@@ -63,5 +64,24 @@ class ExerciseController extends Controller
         $exercise->delete();
         return redirect()->route('exercises.index')
                          ->with('success', 'Exercise removed.');
+    }
+
+
+    public function apiIndex(): JsonResponse
+    {
+        return response()->json(Exercise::all());
+    }
+
+    public function apiShow($id): JsonResponse
+    {
+        $exercise = Exercise::findOrFail($id);
+
+        return response()->json([
+            'id' => $exercise->id,
+            'name' => $exercise->name,
+            'description' => $exercise->description,
+            'sets' => $exercise->sets,
+            'repetitions' => $exercise->repetitions,
+        ]);
     }
 }
