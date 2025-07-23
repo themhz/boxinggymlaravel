@@ -58,5 +58,10 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(Teacher::class);
     }
 
+    public function teacherSalaries()
+    {
+        return $this->hasMany(TeacherSalary::class);
+    }
+
     
 }

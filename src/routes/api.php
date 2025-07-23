@@ -23,6 +23,8 @@ use App\Http\Controllers\PaymentMethodController;
 use App\Models\ClassModel;
 use App\Http\Controllers\ClassSessionController;
 use App\Http\Controllers\ExerciseController;
+use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\TeacherSalaryController;
 
 
 
@@ -165,6 +167,13 @@ Route::get('students/{id}/lessons', [StudentController::class, 'studentLessons']
 
 Route::apiResource('teachers', TeacherController::class)->only(['index', 'show']);
 Route::get('teachers/{id}/lessons', [TeacherController::class, 'lessons']);
+Route::get('teachers-salaries', [TeacherSalaryController::class, 'index']);
+Route::get('teachers-salaries/{id}', [TeacherSalaryController::class, 'byUser']);
+//Route::get('teachers-salaries/user/{userId}', [TeacherSalaryController::class, 'byUser']);
+
+Route::post('teachers-salaries', [TeacherSalaryController::class, 'store']);
+
+
 
 Route::get('/users', [UserController::class, 'index']);
 Route::get('/users/{id}', [UserController::class, 'show']);
@@ -186,21 +195,28 @@ Route::get('/students/{id}/exercises', [ClassSessionController::class, 'apiStude
 Route::get('/payment-methods', [PaymentMethodController::class, 'index']);
 
 Route::get('/sessions', [ClassSessionController::class, 'apiIndex']);
+Route::get('/sessions/{id}', [ClassSessionController::class, 'apiShow']);
+Route::get('/sessions/{id}/exercises', [ClassSessionController::class, 'apiSessionExercises']);
+
 
 Route::get('/exercises', [ExerciseController::class, 'apiIndex']);
 Route::get('/exercises/{id}', [ExerciseController::class, 'apiShow']);
+
+Route::get('/attendances', [AttendanceController::class, 'apiIndex']);
+Route::get('/attendances/{id}', [AttendanceController::class, 'apiShow']);
+
+
 
 // Protected write routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('teams', TeamController::class)->except(['index', 'show']);
     Route::apiResource('teachers', TeacherController::class)->except(['index', 'show']);
-    Route::apiResource('students', StudentController::class)->except(['index', 'show']); //Working on
-    //Route::apiResource('class-types', ClassTypeController::class)->except(['index', 'show']);
+    Route::apiResource('students', StudentController::class)->except(['index', 'show']);    
     Route::apiResource('classes', ClassController::class)->except(['index', 'show']);
     Route::apiResource('appointments', AppointmentController::class)->except(['index', 'show']);
     Route::apiResource('availability', AppointmentAvailabilityController::class)->except(['index', 'show']);    
-    Route::apiResource('posts', PostController::class)->except(['index', 'show']);    //OK
-    Route::apiResource('lessons', LessonController::class)->except(['index', 'show']);    //OK
+    Route::apiResource('posts', PostController::class)->except(['index', 'show']);    
+    Route::apiResource('lessons', LessonController::class)->except(['index', 'show']);
     Route::apiResource('membership-plans', MembershipPlanController::class)->except(['index', 'show']);
     Route::apiResource('offers', OfferController::class)->except(['index', 'show']);
 });

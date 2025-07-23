@@ -140,6 +140,39 @@ class ClassSessionController extends Controller
         return response()->json($data);
     }
 
+    public function apiSessionExercises($id): JsonResponse
+    {
+        $session = ClassSession::with('exercises.exercise')->findOrFail($id);
+
+        $exercises = $session->exercises->map(function ($e) {
+            return [
+                'name' => $e->exercise->name,
+                'description' => $e->exercise->description,
+                'sets' => $e->exercise->sets,
+                'reps' => $e->exercise->repetitions,
+            ];
+        });
+
+        return response()->json([
+            'session_id' => $session->id,
+            'session_date' => $session->session_date,
+            'exercises' => $exercises,
+        ]);
+    
+    }
+
+    // GET /api/sessions/{id}
+    public function apiShow($id): JsonResponse
+    {
+        $session = ClassSession::with([
+            'attendances.student',
+            'exercises.exercise',
+            'relatedClass.lesson'
+        ])->findOrFail($id);
+
+        return response()->json($session);
+    }
+
 
 
 
