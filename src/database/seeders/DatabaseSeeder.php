@@ -26,14 +26,13 @@ class DatabaseSeeder extends Seeder
             ClassSeeder::class,
             PaymentSeeder::class,
             TeacherSalarySeeder::class,
-            LessonTeacherSeeder::class,
-            ClassExceptionsTableSeeder::class,
+            LessonTeacherSeeder::class,            
             ClassSessionsTableSeeder::class,
             AttendancesTableSeeder::class,
             ClassStudentSeeder::class,
             ExerciseSeeder::class,
-            StudentExerciseSeeder::class,
-
+            StudentExerciseSeeder::class,            
+            ClassExceptionSeeder::class,
         ]);
 
     }

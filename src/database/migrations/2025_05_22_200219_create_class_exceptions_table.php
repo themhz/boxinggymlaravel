@@ -14,16 +14,18 @@ return new class extends Migration
         Schema::create('class_exceptions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('class_id')
-                  ->constrained('classes')
-                  ->onDelete('cascade');
+                ->constrained('classes')
+                ->onDelete('cascade');
             $table->date('exception_date');
             $table->boolean('is_cancelled')->default(true);
             $table->time('override_start_time')->nullable();
             $table->time('override_end_time')->nullable();
+            $table->string('reason')->nullable(); // NEW
             $table->timestamps();
 
             $table->unique(['class_id', 'exception_date'], 'class_exception_unique');
         });
+
     }
 
     /**

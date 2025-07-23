@@ -15,6 +15,7 @@ class ClassException extends Model
         'is_cancelled',
         'override_start_time',
         'override_end_time',
+        'reason',
     ];
 
     protected $casts = [
@@ -23,7 +24,7 @@ class ClassException extends Model
         // Option A: store times as plain strings
         'override_start_time' => 'string',
         'override_end_time'   => 'string',
-
+        'reason' =>'string',
         // — or —
 
         // Option B: cast them as datetimes with format
@@ -33,6 +34,6 @@ class ClassException extends Model
 
     public function class()
     {
-        return $this->belongsTo(\App\Models\ClassException::class);
+        return $this->belongsTo(ClassModel::class, 'class_id');
     }
 }

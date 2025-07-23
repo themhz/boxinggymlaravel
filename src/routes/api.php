@@ -25,6 +25,7 @@ use App\Http\Controllers\ClassSessionController;
 use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\TeacherSalaryController;
+use App\Http\Controllers\ClassExceptionController;
 
 
 
@@ -159,6 +160,11 @@ Route::prefix('classes')->group(function () {
 Route::get('classes-schedule', [ClassController::class, 'schedule']); // for schedule
 Route::get('classes-sessions', [ClassSessionController::class, 'apiClassesWithSessions']);
 Route::get('classes-sessions/{id}', [ClassSessionController::class, 'apiClassSessionsById']);
+
+Route::get('classes-exceptions', [ClassExceptionController::class, 'index']);
+Route::post('classes-exceptions', [ClassExceptionController::class, 'store']);
+Route::get('classes-exceptions/{id}', [ClassExceptionController::class, 'show']);
+Route::delete('classes-exceptions/{id}', [ClassExceptionController::class, 'destroy']);
 
 Route::apiResource('lessons', LessonController::class)->only(['index', 'show']);
 Route::get('lessons-teachers', [LessonController::class, 'withTeachers']);
