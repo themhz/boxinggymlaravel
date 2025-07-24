@@ -68,18 +68,23 @@ class ClassController extends Controller
 
     public function show($id)
     {
-        $class = ClassModel::with('lesson')->findOrFail($id);
-        //return response()->json("ddd");
+        $class = ClassModel::with(['lesson', 'teacher'])->findOrFail($id);
+
+        return response()->json([
+            'class' => $class
+        ]);
     }
+
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'lesson_id' => 'required|exists:lessons,id',
-            'start_time' => 'required|date_format:H:i:s',
-            'end_time' => 'required|date_format:H:i:s|after:start_time',
-            'day' => 'required|string',
-            'capacity' => 'required|integer|min:1',
+            'lesson_id'   => 'required|exists:lessons,id',
+            'teacher_id'  => 'required|exists:teachers,id', // 👈 Add this
+            'start_time'  => 'required|date_format:H:i:s',
+            'end_time'    => 'required|date_format:H:i:s|after:start_time',
+            'day'         => 'required|string',
+            'capacity'    => 'required|integer|min:1',
         ]);
 
         $class = ClassModel::create($validated);
