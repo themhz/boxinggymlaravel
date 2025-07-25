@@ -7,6 +7,7 @@ use App\Models\ClassModel;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class ClassSessionController extends Controller
 {
@@ -171,6 +172,57 @@ class ClassSessionController extends Controller
         ])->findOrFail($id);
 
         return response()->json($session);
+    }
+
+
+
+    public function apiStore(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'class_id'     => 'required|exists:classes,id',
+            'session_date' => 'required|date',
+        ]);
+
+        $session = ClassSession::create($data);
+
+        return response()->json([
+            'message' => 'Class session created successfully',
+            'session' => $session
+        ], 201);
+    }
+
+    public function apiUpdate(Request $request, $id): JsonResponse
+    {
+        try {
+            $session = ClassSession::findOrFail($id);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'Session not found'], 404);
+        }
+
+        $data = $request->validate([
+            'class_id'     => 'sometimes|exists:classes,id',
+            'session_date' => 'sometimes|date',
+        ]);
+
+        $session->update($data);
+
+        return response()->json([
+            'message' => 'Class session updated successfully',
+            'session' => $session
+        ]);
+    }
+
+    public function apiDestroy($id): JsonResponse
+    {
+        $session = ClassSession::find($id);
+
+        if (!$session) {
+            return response()->json(['deleted' => 0], 404);
+        }
+
+        $deleted = $session->delete();
+
+        return response()->json(['deleted' => $deleted ? 1 : 0]);
     }
 
 

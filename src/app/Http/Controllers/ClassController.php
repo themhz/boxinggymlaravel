@@ -101,6 +101,7 @@ class ClassController extends Controller
 
         $validated = $request->validate([
             'lesson_id' => 'sometimes|exists:lessons,id',
+            'teacher_id' => 'sometimes|exists:teachers,id', // ✅ Add this
             'start_time' => 'sometimes|date_format:H:i:s',
             'end_time' => 'sometimes|date_format:H:i:s|after:start_time',
             'day' => 'sometimes|string',
@@ -117,11 +118,17 @@ class ClassController extends Controller
 
     public function destroy($id)
     {
-        $class = ClassModel::findOrFail($id);
-        $class->delete();
+        $class = ClassModel::find($id);
 
-        return response()->noContent(); // 204 response
+        if (!$class) {
+            return response()->json(['deleted' => 0], 404);
+        }
+
+        $deleted = $class->delete(); // returns true if deleted
+
+        return response()->json(['deleted' => $deleted ? 1 : 0]);
     }
+
 
     public function available()
     {

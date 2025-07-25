@@ -86,8 +86,15 @@ Route::get('/email/verify/{id}/{hash}', fn(EmailVerificationRequest $request) =>
     ->middleware(['auth:sanctum', 'signed'])
     ->name('verification.verify');
 
-// Public Class Routes
+
+//Class Schedule Routes
 Route::get('classes-schedule', [ClassController::class, 'schedule']);
+Route::post('classes-schedule', [ClassController::class, 'store']);
+Route::put('classes-schedule/{id}', [ClassController::class, 'update']);
+Route::patch('classes-schedule/{id}', [ClassController::class, 'update']);
+Route::delete('classes-schedule/{id}', [ClassController::class, 'destroy']);
+
+//Classes API Routes
 Route::get('classes/{id}/students', [ClassController::class, 'students']);
 Route::get('classes/{id}', fn($id) => ClassModel::with(['teacher', 'students', 'lesson'])->findOrFail($id));
 Route::post('classes', [ClassController::class, 'store']);
@@ -98,10 +105,16 @@ Route::delete('classes/{id}', [ClassController::class, 'destroy']);
 // Class Sessions & Exceptions
 Route::get('classes-sessions', [ClassSessionController::class, 'apiClassesWithSessions']);
 Route::get('classes-sessions/{id}', [ClassSessionController::class, 'apiClassSessionsById']);
+Route::post('classes-sessions', [ClassSessionController::class, 'apiStore']);
+Route::put('classes-sessions/{id}', [ClassSessionController::class, 'apiUpdate']);
+Route::patch('classes-sessions/{id}', [ClassSessionController::class, 'apiUpdate']);
+Route::delete('classes-sessions/{id}', [ClassSessionController::class, 'apiDestroy']);
+
 Route::apiResource('classes-exceptions', ClassExceptionController::class)->only(['index', 'show', 'store', 'destroy']);
 
 // Related resources
 Route::apiResource('lessons', LessonController::class)->only(['index', 'show']);
+
 Route::get('lessons-teachers', [LessonController::class, 'withTeachers']);
 Route::apiResource('students', StudentController::class)->only(['index', 'show']);
 Route::get('students/{id}/lessons', [StudentController::class, 'studentLessons']);
