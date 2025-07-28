@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Lesson;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class LessonController extends Controller
 {
@@ -45,35 +46,83 @@ class LessonController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'teacher_id' => 'required|exists:teachers,id',
+            'level' => 'nullable|string|max:50',
+            'image' => 'nullable|string|max:255',
+            'teacher_ids' => 'required|array',
+            'teacher_ids.*' => 'exists:teachers,id',
         ]);
 
-        $lesson = Lesson::create($validated);
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $validated = $validator->validated();
+
+        $lesson = Lesson::create([
+            'title' => $validated['title'],
+            'description' => $validated['description'] ?? null,
+            'level' => $validated['level'] ?? null,
+            'image' => $validated['image'] ?? null,
+        ]);
+
+        $lesson->teachers()->attach($validated['teacher_ids']);
 
         return response()->json([
             'message' => 'Lesson created successfully',
-            'lesson' => $lesson
+            'lesson' => $lesson->load('teachers')
         ], 201);
     }
 
-    public function update(Request $request, $id)
+   public function update(Request $request, $id)
     {
-        $lesson = Lesson::findOrFail($id);
+        $lesson = Lesson::find($id);
 
-        $validated = $request->validate([
+        if (!$lesson) {
+            return response()->json([
+                'message' => 'Lesson not found'
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
             'title' => 'sometimes|string|max:255',
             'description' => 'nullable|string',
-            'teacher_id' => 'sometimes|exists:teachers,id',
+            'level' => 'nullable|string|max:50',
+            'image' => 'nullable|string|max:255',
+            'teacher_ids' => 'sometimes|array',
+            'teacher_ids.*' => 'exists:teachers,id',
         ]);
 
-        $lesson->update($validated);
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $validated = $validator->validated();
+
+        // Update lesson fields
+        $lesson->update([
+            'title' => $validated['title'] ?? $lesson->title,
+            'description' => $validated['description'] ?? $lesson->description,
+            'level' => $validated['level'] ?? $lesson->level,
+            'image' => $validated['image'] ?? $lesson->image,
+        ]);
+
+        // Sync teacher relationships if provided
+        if (isset($validated['teacher_ids'])) {
+            $lesson->teachers()->sync($validated['teacher_ids']);
+        }
 
         return response()->json([
             'message' => 'Lesson updated successfully',
-            'lesson' => $lesson
+            'lesson' => $lesson->load('teachers')
         ]);
     }
 

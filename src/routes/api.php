@@ -113,7 +113,11 @@ Route::delete('classes-sessions/{id}', [ClassSessionController::class, 'apiDestr
 Route::apiResource('classes-exceptions', ClassExceptionController::class)->only(['index', 'show', 'store', 'destroy']);
 
 // Related resources
+Route::post('lessons', [LessonController::class, 'store']);
+Route::put('lessons/{id}', [LessonController::class, 'update']);
 Route::apiResource('lessons', LessonController::class)->only(['index', 'show']);
+
+
 
 Route::get('lessons-teachers', [LessonController::class, 'withTeachers']);
 Route::apiResource('students', StudentController::class)->only(['index', 'show']);
