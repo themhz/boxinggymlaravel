@@ -128,9 +128,15 @@ class LessonController extends Controller
 
     public function destroy($id)
     {
-        $lesson = Lesson::findOrFail($id);
+        $lesson = Lesson::find($id);
+
+        if (!$lesson) {
+            return response()->json(0);
+        }
+
         $lesson->delete();
 
-        return response()->noContent();
+        return response()->json(1);
     }
+
 }
