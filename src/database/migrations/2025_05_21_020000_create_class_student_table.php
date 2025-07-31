@@ -10,7 +10,9 @@ return new class extends Migration {
         Schema::create('class_student', function (Blueprint $table) {
             $table->foreignId('class_id')->constrained('classes')->onDelete('cascade');
             $table->foreignId('student_id')->constrained('students')->onDelete('cascade');
-            $table->primary(['class_id','student_id']);
+            $table->primary(['class_id','student_id']);             
+            $table->string('status')->nullable();
+            $table->text('note')->nullable();
             $table->timestamps();
         });
     }

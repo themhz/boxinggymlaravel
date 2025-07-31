@@ -96,6 +96,13 @@ Route::delete('classes-schedule/{id}', [ClassController::class, 'destroy']);
 
 //Classes API Routes
 Route::get('classes/{id}/students', [ClassController::class, 'students']);
+Route::post('classes/{id}/students', [ClassController::class, 'addStudent']);
+Route::put('classes/{classId}/students/{studentId}', [ClassController::class, 'updateStudent']);
+Route::patch('classes/{classId}/students/{studentId}', [ClassController::class, 'patchStudent']);
+Route::delete('classes/{classId}/students/{studentId}', [ClassController::class, 'removeStudent']);
+
+
+
 Route::get('classes/{id}', fn($id) => ClassModel::with(['teacher', 'students', 'lesson'])->findOrFail($id));
 Route::post('classes', [ClassController::class, 'store']);
 Route::put('classes/{id}', [ClassController::class, 'update']);

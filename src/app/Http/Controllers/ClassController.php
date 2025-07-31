@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\ClassModel;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use App\Models\ClassSession; // your model
+use App\Models\ClassSession; 
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class ClassController extends Controller
 {    
@@ -154,5 +155,79 @@ class ClassController extends Controller
         $class = ClassModel::findOrFail($id);
         return response()->json($class->students);
     }
+
+
+    // Add student to class
+    public function addStudent(Request $request, $id)
+    {
+        $request->validate([
+            'student_id' => 'required|exists:students,id',
+        ]);
+
+        $class = ClassModel::findOrFail($id);
+        $class->students()->syncWithoutDetaching([$request->student_id]);
+
+        return response()->json(['message' => 'Student added to class']);
+    }
+
+    // Update student pivot (optional)
+    public function updateStudent(Request $request, $classId, $studentId)
+    {
+        try {
+            $class = ClassModel::findOrFail($classId);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['result' => 0, 'message' => 'Class not found'], 404);
+        }
+
+        $updated = $class->students()->updateExistingPivot($studentId, [
+            'status' => $request->input('status'),
+            'note'   => $request->input('note'),
+        ]);
+
+        return response()->json([
+            'result' => $updated ? 1 : 0,
+            'message' => $updated ? 'Student updated in class' : 'Nothing was updated',
+        ]);
+    }
+
+    public function patchStudent(Request $request, $classId, $studentId)
+    {
+        try {
+            $class = ClassModel::findOrFail($classId);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['result' => 0, 'message' => 'Class not found'], 404);
+        }
+
+        $data = $request->only(['status', 'note']);
+        if (empty($data)) {
+            return response()->json(['result' => 0, 'message' => 'No fields provided'], 400);
+        }
+
+        $updated = $class->students()->updateExistingPivot($studentId, $data);
+
+        return response()->json([
+            'result' => $updated ? 1 : 0,
+            'message' => $updated ? 'Student updated in class' : 'Nothing was updated',
+        ]);
+    }
+
+
+    // Remove student from class
+    public function removeStudent($classId, $studentId)
+    {
+        try {
+            $class = ClassModel::findOrFail($classId);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['result' => 0, 'message' => 'Class not found'], 404);
+        }
+
+        $detached = $class->students()->detach($studentId); // returns number of rows affected
+
+        return response()->json([
+            'result' => $detached ? 1 : 0,
+            'message' => $detached ? 'Student removed from class' : 'Student not enrolled or already removed',
+        ]);
+    }
+
 
 }
