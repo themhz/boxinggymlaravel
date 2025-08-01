@@ -68,11 +68,15 @@ class ClassExceptionController extends Controller
             'override_end_time'   => 'nullable|date_format:H:i:s',
         ]);
 
-        $exception->update($data);
+        $updated = $exception->update($data);
 
-        return redirect()->route('exceptions.index')
-                         ->with('success', 'Exception updated.');
+        return response()->json([
+            'result' => $updated ? 1 : 0,
+            'message' => $updated ? 'Class exception updated.' : 'No changes made.',
+            'data' => $exception
+        ]);
     }
+
 
     // Delete exception
     public function destroy($id): JsonResponse
