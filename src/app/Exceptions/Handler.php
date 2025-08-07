@@ -5,6 +5,8 @@ namespace App\Exceptions;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
 
 class Handler extends ExceptionHandler
 {
@@ -50,6 +52,12 @@ class Handler extends ExceptionHandler
 
     }
     
-    
+    public function invalidJson($request, ValidationException $exception): JsonResponse
+    {
+        return response()->json([
+            'message' => 'Validation failed.',
+            'errors' => $exception->errors(),
+        ], 422);
+    }
 
 }

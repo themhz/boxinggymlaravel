@@ -38,11 +38,14 @@ class ClassExceptionController extends Controller
         $data = $request->validate([
             'class_id' => 'required|exists:classes,id',
             'exception_date' => 'required|date',
-            'is_cancelled' => 'boolean',
+            'is_cancelled' => 'sometimes|boolean',
             'override_start_time' => 'nullable|date_format:H:i',
             'override_end_time' => 'nullable|date_format:H:i',
             'reason' => 'nullable|string|max:255',
         ]);
+
+        $data['is_cancelled'] = $data['is_cancelled'] ?? false;
+
 
         $exception = ClassException::create($data);
 
@@ -58,24 +61,29 @@ class ClassExceptionController extends Controller
         return view('exceptions.edit', compact('exception','classes'));
     }
 
-    public function update(Request $request, ClassException $exception)
+    public function update(Request $request, ClassException $classes_exception)
     {
         $data = $request->validate([
-            'class_id'            => 'required|exists:classes,id',
-            'exception_date'      => 'required|date',
-            'is_cancelled'        => 'boolean',
-            'override_start_time' => 'nullable|date_format:H:i:s',
-            'override_end_time'   => 'nullable|date_format:H:i:s',
+            'class_id'            => 'sometimes|required|exists:classes,id',
+            'exception_date'      => 'sometimes|required|date',
+            'is_cancelled'        => 'sometimes|required|boolean',
+            'override_start_time' => 'sometimes|required|date_format:H:i:s',
+            'override_end_time'   => 'sometimes|required|date_format:H:i:s',
         ]);
 
-        $updated = $exception->update($data);
+        // Force-set the field to make sure it's picked up
+        $classes_exception->fill($data);
+        $classes_exception->is_cancelled = (bool) $data['is_cancelled'];
+
+        $classes_exception->save(); // this saves the EXISTING record — not create a new one
 
         return response()->json([
-            'result' => $updated ? 1 : 0,
-            'message' => $updated ? 'Class exception updated.' : 'No changes made.',
-            'data' => $exception
+            'message' => 'Class exception updated.',
+            'data' => $classes_exception->fresh(),
         ]);
     }
+
+
 
 
     // Delete exception
