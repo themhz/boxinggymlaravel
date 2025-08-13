@@ -11,13 +11,8 @@ class StudentPayment extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
-        'payment_method_id',
-        'membership_plan_id',
-        'offer_id',
-        'start_date',
-        'end_date',
-        'amount',
+        'user_id','membership_plan_id','offer_id','payment_method_id',
+        'start_date','end_date','amount',
     ];
 
     // Relationships

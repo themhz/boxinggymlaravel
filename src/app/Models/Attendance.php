@@ -9,23 +9,20 @@ class Attendance extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'session_id',
-        'student_id',
-        'status',
-    ];
+    protected $fillable = ['student_id', 'session_id', 'status', 'note'];
+
 
     protected $casts = [
         'status' => 'string',
     ];
+    
 
-    public function session()
-    {
-        return $this->belongsTo(ClassSession::class, 'session_id');
+   public function session() { 
+        return $this->belongsTo(ClassSession::class, 'session_id'); 
     }
 
-    public function student()
-    {
-        return $this->belongsTo(Student::class, 'student_id');
+    public function student() { 
+        return $this->belongsTo(Student::class); 
     }
+
 }

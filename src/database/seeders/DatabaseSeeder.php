@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\AppointmentAvailability;
@@ -34,6 +36,16 @@ class DatabaseSeeder extends Seeder
             StudentExerciseSeeder::class,            
             ClassExceptionSeeder::class,
         ]);
+
+        // Create or update the admin user
+        User::updateOrCreate(
+            ['email' => 'themhz@gmail.com'],
+            [
+                'name'     => 'Themis Theotokatos',
+                'password' => Hash::make('526996'), // or change if needed
+                'role'     => 'admin',
+            ]
+        );
 
     }
 }

@@ -14,17 +14,25 @@ class ExerciseSeeder extends Seeder
         public function run(): void
         {
             $exercises = [
-            ['name' => 'Jab-Cross Combo', 'sets' => 3, 'repetitions' => 20, 'description' => 'Basic punch combo'],
-            ['name' => 'Uppercut Drill', 'sets' => 4, 'repetitions' => 15, 'description' => 'Fast uppercuts'],
-            ['name' => 'Push Ups', 'sets' => 4, 'repetitions' => 20, 'description' => 'Classic chest exercise'],
-            ['name' => 'Jump Rope', 'sets' => 3, 'repetitions' => 60, 'description' => 'Cardio warm-up'],
-            ['name' => 'Shadow Boxing', 'sets' => 4, 'repetitions' => 180, 'description' => 'Freestyle movement'],
-            ['name' => 'Sit Ups', 'sets' => 4, 'repetitions' => 25, 'description' => 'Abdominal exercise'],
-            ['name' => 'Plank', 'sets' => 3, 'repetitions' => 60, 'description' => 'Core hold'],
-            ['name' => 'Burpees', 'sets' => 4, 'repetitions' => 10, 'description' => 'Full body move'],
-            ['name' => 'Neck Rolls', 'sets' => 3, 'repetitions' => 10, 'description' => 'Neck mobility'],
-            ['name' => 'Mountain Climbers', 'sets' => 4, 'repetitions' => 30, 'description' => 'Cardio-core'],
-        ];
+                // Boxing-specific
+                ['name' => 'Jab-Cross Combo',   'description' => 'Basic punch combo',       'exercise_type' => 'Resistance'],
+                ['name' => 'Uppercut Drill',    'description' => 'Fast uppercuts',          'exercise_type' => 'Resistance'],
+                ['name' => 'Push Ups',          'description' => 'Classic chest exercise',  'exercise_type' => 'Resistance'],
+                ['name' => 'Jump Rope',         'description' => 'Cardio warm-up',          'exercise_type' => 'Cardio'],
+                ['name' => 'Shadow Boxing',     'description' => 'Freestyle movement',      'exercise_type' => 'Cardio'],
+                ['name' => 'Sit Ups',           'description' => 'Abdominal exercise',      'exercise_type' => 'Resistance'],
+                ['name' => 'Plank',             'description' => 'Core hold',               'exercise_type' => 'Resistance'],
+                ['name' => 'Burpees',           'description' => 'Full body move',          'exercise_type' => 'Cardio'],
+                ['name' => 'Neck Rolls',        'description' => 'Neck mobility',           'exercise_type' => 'Elasticity'],
+                ['name' => 'Mountain Climbers', 'description' => 'Cardio-core',             'exercise_type' => 'Cardio'],
+
+                // General fitness
+                ['name' => 'Running',           'description' => 'Outdoor running for endurance',    'exercise_type' => 'Cardio'],
+                ['name' => 'Squats',            'description' => 'Lower body strength exercise',     'exercise_type' => 'Resistance'],
+                ['name' => 'Hamstring Stretch', 'description' => 'Static stretch for hamstrings',    'exercise_type' => 'Elasticity'],
+                ['name' => 'Bench Press',       'description' => 'Upper body push strength exercise','exercise_type' => 'Resistance']
+            ];
+
 
         foreach ($exercises as $exercise) {
             Exercise::create($exercise);

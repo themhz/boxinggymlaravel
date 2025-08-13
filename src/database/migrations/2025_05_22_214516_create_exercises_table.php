@@ -14,9 +14,8 @@ return new class extends Migration
         Schema::create('exercises', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->text('description')->nullable();
-            $table->unsignedInteger('sets');
-            $table->unsignedInteger('repetitions');
+            $table->text('description')->nullable();            
+            $table->string('exercise_type', 50); // Cardio | Resistance | Elasticity
             $table->timestamps();
         });
     }

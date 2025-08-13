@@ -26,6 +26,9 @@ use App\Http\Controllers\StudentPaymentController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\StudentClassController;
+use App\Http\Controllers\StudentAttendanceController;
+use App\Http\Controllers\StudentExerciseController;
 
 use App\Models\ClassModel;
 
@@ -129,12 +132,28 @@ Route::apiResource('lessons', LessonController::class)->only(['index', 'show']);
 
 
 Route::get('lessons-teachers', [LessonController::class, 'withTeachers']);
-Route::apiResource('students', StudentController::class)->only(['index', 'show']);
-Route::get('students/{id}/lessons', [StudentController::class, 'studentLessons']);
-Route::get('students/{user}/payments', [StudentPaymentController::class, 'byStudent']);
-Route::get('students/{user}/payments/{payment}', [StudentPaymentController::class, 'studentPaymentShow']);
-Route::get('students/{id}/attendance', [ClassSessionController::class, 'apiStudentAttendance']);
-Route::get('students/{id}/exercises', [ClassSessionController::class, 'apiStudentExercises']);
+//Route::apiResource('students', StudentController::class)->only(['index', 'show']);
+
+
+Route::apiResource('students', StudentController::class);
+Route::apiResource('students.attendance', StudentAttendanceController::class)->only(['index', 'store', 'update', 'destroy', 'show']);
+
+
+
+//Route::get('students/{id}/classes', [StudentController::class, 'studentClasses']);
+//Route::apiResource('students.classes', StudentClassController::class)->only(['index','store','update','destroy']); 
+//Route::apiResource('students.exercises', StudentExerciseController::class)->only(['index', 'store', 'update', 'destroy']);
+//Route::apiResource('students.payments', StudentPaymentController::class);
+// routes/api.php
+Route::apiResource('students.payments', StudentPaymentController::class)
+    ->parameters([
+        'students' => 'user',        // bind {students} to App\Models\User
+        'payments' => 'payment',     // bind {payment} to App\Models\StudentPayment
+    ])->only(['index', 'show', 'store', 'update', 'destroy']);
+
+
+
+
 
 Route::apiResource('teachers', TeacherController::class)->only(['index', 'show']);
 Route::get('teachers/{id}/lessons', [TeacherController::class, 'lessons']);

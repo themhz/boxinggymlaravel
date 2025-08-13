@@ -11,14 +11,13 @@ class Exercise extends Model
 
     protected $fillable = [
         'name',
-        'description',
-        'sets',
+        'description',     
         'repetitions',
     ];
 
     public function students()
     {
-        return $this->belongsToMany(Student::class, 'student_exercise')
+        return $this->belongsToMany(Student::class, 'student_exercises')
                     ->withTimestamps();
     }
 

@@ -11,17 +11,24 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('student_exercise', function (Blueprint $table) {
+        Schema::create('student_exercises', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('student_id')
-                  ->constrained('students')
-                  ->onDelete('cascade');
-            $table->foreignId('exercise_id')
-                  ->constrained('exercises')
-                  ->onDelete('cascade');
+
+            $table->foreignId('student_id')->constrained('students')->onDelete('cascade');
+            $table->foreignId('exercise_id')->constrained('exercises')->onDelete('cascade');
+
+            // personalized per-student fields
+            $table->unsignedInteger('sets')->nullable();
+            $table->unsignedInteger('repetitions')->nullable();      // per-set target/actual
+            $table->decimal('weight', 6, 2)->nullable();              // kg
+            $table->unsignedInteger('duration_seconds')->nullable();  // holds / cardio            
+            $table->text('note')->nullable();
+
             $table->timestamps();
-            $table->unique(['student_id','exercise_id'], 'student_exercise_unique');
+
+            $table->unique(['student_id', 'exercise_id'], 'student_exercise_unique');
         });
+
     }
 
     /**
@@ -29,6 +36,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('student_exercise');
+        Schema::dropIfExists('student_exercises');
     }
 };

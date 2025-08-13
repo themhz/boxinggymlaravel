@@ -8,25 +8,22 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Student extends Model
 {
     use HasFactory;
-    protected $fillable = ['name', 'email', 'user_id']; // Add other fields if needed
+    protected $fillable = ['name', 'email','phone' ,'dob','image', 'user_id']; // Add other fields if needed
 
     
     public function classes()
     {
-        return $this->belongsToMany(
-            ClassModel::class, 
-            'class_student',
-            'student_id',      
-            'class_id',
-      
-        )->withTimestamps();
+        return $this->belongsToMany(ClassModel::class, 'class_student', 'student_id', 'class_id')
+            ->withPivot(['status','note'])
+            ->withTimestamps();
     }
+
 
     public function exercises()
     {
         //return $this->belongsToMany(Exercise::class, 'student_exercise')->withTimestamps();
         //return $this->belongsToMany(Exercise::class, 'exercises')->withTimestamps();
-        return $this->belongsToMany(Exercise::class, 'student_exercise', 'student_id', 'exercise_id')
+        return $this->belongsToMany(Exercise::class, 'student_exercises', 'student_id', 'exercise_id')
                 ->withTimestamps();
     }
 

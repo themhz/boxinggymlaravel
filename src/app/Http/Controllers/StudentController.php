@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Student;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class StudentController extends Controller
 {
@@ -20,11 +21,11 @@ class StudentController extends Controller
         return response()->json($student);
     }
 
-    public function studentLessons($id)
+    public function studentClasses($id)
     {
         $student = Student::with('classes.lesson')->findOrFail($id);
 
-        $uniqueLessons = $student->classes
+        $uniqueLessons = $student->classes 
             ->map(fn($class) => $class->lesson)
             ->unique('id')
             ->values()
@@ -41,42 +42,53 @@ class StudentController extends Controller
 
     public function store(Request $request)
     {
+        $request->headers->set('Accept', 'application/json'); // double-force JSON
+        // Only admins can create students
+        Gate::authorize('students.create');
+
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:students,email',
-            'phone' => 'nullable|string|max:20',
-            'dob' => 'nullable|date',
-            // 'team_id' => 'nullable|exists:teams,id',
+            'name'    => 'required|string|max:255',
+            'email'   => 'required|email|unique:students,email',
+            'phone'   => 'nullable|string|max:20',
+            'dob'     => 'nullable|date',
+            'image'   => 'nullable|string',
+            // must exist AND be unused by any other student
+            'user_id' => 'required|integer|exists:users,id|unique:students,user_id',
+        ], [
+            'user_id.unique' => 'This user already has a student profile.',
         ]);
 
-        // Attach the authenticated user's ID
-        $validated['user_id'] = $request->user()->id;
+        $student = Student::create($validated)->refresh();
 
-        $student = Student::create($validated);
-
-        return response()->json([
-            'message' => 'Student created successfully',
-            'student' => $student
-        ], 201);
+        return response()->json(['message' => 'Student created successfully','student' => $student], 201);
     }
 
 
-    public function update(Request $request, $id)
+
+
+    public function update(Request $request, Student $student)
     {
-        $student = Student::findOrFail($id);
+        $request->headers->set('Accept', 'application/json'); // double-force JSON
+        // Only admins can update students
+        Gate::authorize('students.create'); // same gate we used for create
 
         $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|unique:students,email,' . $student->id,
-            'phone' => 'sometimes|string|max:20',
-            'dob' => 'sometimes|date',            
+            'name'    => 'sometimes|required|string|max:255',
+            'email'   => 'sometimes|required|email|unique:students,email,' . $student->id,
+            'phone'   => 'nullable|string|max:20',
+            'dob'     => 'nullable|date',
+            'image'   => 'nullable|string',
+            // must exist and be unique in students table except current
+            'user_id' => 'sometimes|required|integer|exists:users,id|unique:students,user_id,' . $student->id,
+        ], [
+            'user_id.unique' => 'This user already has a student profile.',
         ]);
 
         $student->update($validated);
 
         return response()->json([
             'message' => 'Student updated successfully',
-            'student' => $student
+            'student' => $student->fresh()
         ]);
     }
 

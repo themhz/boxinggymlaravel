@@ -8,7 +8,7 @@ return new class extends Migration {
     public function up()
     {
         Schema::create('students', function (Blueprint $table) {
-            $table->id();
+            $table->id(); 
 
             // Student profile fields
             $table->string('name');
@@ -17,9 +17,10 @@ return new class extends Migration {
             $table->date('dob')->nullable();
             $table->string('image')->nullable();
 
-            // Link to users table
-            $table->unsignedBigInteger('user_id')->nullable();
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreignId('user_id')
+                  ->constrained('users')
+                  ->cascadeOnDelete()
+                  ->unique(); // 👈 ensures only one student per user
             
             
 

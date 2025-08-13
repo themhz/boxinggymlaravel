@@ -7,6 +7,9 @@ use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+
 
 class Handler extends ExceptionHandler
 {
@@ -59,5 +62,37 @@ class Handler extends ExceptionHandler
             'errors' => $exception->errors(),
         ], 422);
     }
+
+    public function render($request, Throwable $e)
+    {
+        // Return JSON for any /api/* route OR when the client wants/expects JSON
+        if ($request->is('api/*') || $request->wantsJson() || $request->expectsJson()) {
+
+            if ($e instanceof \Illuminate\Validation\ValidationException) {
+                return response()->json(['message' => 'Validation failed', 'errors' => $e->errors()], 422);
+            }
+
+            if ($e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
+                return response()->json(['message' => 'Resource not found'], 404);
+            }
+
+            if ($e instanceof \Illuminate\Auth\AuthenticationException) {
+                return response()->json(['message' => 'Unauthenticated'], 401);
+            }
+
+            if ($e instanceof \Illuminate\Auth\Access\AuthorizationException) {
+                return response()->json(['message' => 'Forbidden'], 403);
+            }
+
+            return response()->json([
+                'message'    => $e->getMessage() ?: 'Server error',
+                'exception'  => class_basename($e),
+                'trace'      => config('app.debug') ? collect($e->getTrace())->take(5) : [],
+            ], 500);
+        }
+
+        return parent::render($request, $e);
+    }
+
 
 }
