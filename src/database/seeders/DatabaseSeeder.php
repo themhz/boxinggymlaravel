@@ -27,14 +27,14 @@ class DatabaseSeeder extends Seeder
             LessonSeeder::class,
             ClassSeeder::class,
             PaymentSeeder::class,
-            TeacherSalarySeeder::class,
-            LessonTeacherSeeder::class,            
+            TeacherSalarySeeder::class,            
             ClassSessionsTableSeeder::class,
             AttendancesTableSeeder::class,
             ClassStudentSeeder::class,
             ExerciseSeeder::class,
             StudentExerciseSeeder::class,            
             ClassExceptionSeeder::class,
+            ClassTeacherSeeder::class,
         ]);
 
         // Create or update the admin user

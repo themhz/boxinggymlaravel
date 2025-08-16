@@ -6,18 +6,22 @@ use Illuminate\Database\Eloquent\Model;
 
 class Lesson extends Model
 {
-    use HasFactory;
-
-    protected $fillable = ['title', 'description', 'teacher_id']; // adjust as needed
-
-    public function classes()
+   public function classes()
     {
-        return $this->hasMany(ClassModel::class); // assuming ClassModel is your renamed Program
+        return $this->hasMany(ClassModel::class, 'lesson_id');
     }
-    
+
+    // Teachers who teach this lesson, inferred via classes
     public function teachers()
     {
-        return $this->belongsToMany(Teacher::class);
+        return $this->hasManyThrough(
+            Teacher::class,
+            ClassModel::class,
+            'lesson_id',   // classes.lesson_id -> lessons.id
+            'id',          // teachers.id
+            'id',          // lessons.id
+            'teacher_id'   // classes.teacher_id -> teachers.id
+        )->distinct();
     }
 
 }

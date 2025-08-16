@@ -8,50 +8,58 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class ClassModel extends Model
 {
     use HasFactory;
+
     protected $table = 'classes';
+
     protected $fillable = [
         'lesson_id',
-        'teacher_id',
         'start_time',
         'end_time',
         'day',
-        'capacity'
+        'capacity',
     ];
 
+    protected $casts = [
+        // keep as strings if you store TIME; change to datetime casts only if column types change
+        'start_time' => 'string',
+        'end_time'   => 'string',
+        'capacity'   => 'integer',
+    ];
+
+    /** This class belongs to a lesson */
     public function lesson()
     {
-        return $this->belongsTo(Lesson::class);
+        return $this->belongsTo(Lesson::class, 'lesson_id');
     }
 
-    public function teacher()
+    /** Many teachers via pivot (class_teacher) */
+    public function teachers()
     {
-        return $this->belongsTo(Teacher::class);
+         return $this->belongsToMany(
+                Teacher::class,
+                'class_teacher',
+                'class_id', 
+                'teacher_id'
+            )->withPivot(['role','is_primary'])
+            ->withTimestamps();
     }
 
-
+    /** Many students via pivot (class_student) */
     public function students()
     {
-        return $this->belongsToMany(
-            Student::class,
-            'class_student',
-            'class_id',     // Foreign key on pivot table pointing to Class
-            'student_id'    // Foreign key on pivot table pointing to Student
-        )->withTimestamps();
+        return $this->belongsToMany(Student::class, 'class_student', 'class_id', 'student_id')
+                    ->withTimestamps();
     }
 
-    // Each class has many sessions
-    // public function sessions()
-    // {
-    //     return $this->hasMany(ClassSession::class);
-    // }
+    /** Sessions for this class */
     public function sessions()
     {
         return $this->hasMany(ClassSession::class, 'class_id');
     }
 
-    // Each class can have exceptions (like cancelled or rescheduled sessions)
+    /** Exceptions for this class */
     public function exceptions()
     {
-        return $this->hasMany(ClassException::class);
+        return $this->hasMany(ClassException::class, 'class_id');
     }
 }

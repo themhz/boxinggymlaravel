@@ -5,160 +5,139 @@ namespace App\Http\Controllers;
 use App\Models\ClassModel;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use App\Models\ClassSession; 
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class ClassController extends Controller
-{    
+{
+    // GET /api/classes
     public function index(): JsonResponse
-    {     
-        $classes = ClassModel::with(['lesson', 'teacher'])->get()
-            ->map(fn($c) => [
+    {
+        $classes = ClassModel::with(['lesson', 'teachers:id,first_name,last_name,email'])
+            ->get()
+            ->map(fn ($c) => [
                 'id'         => $c->id,
                 'day'        => $c->day,
                 'start_time' => $c->start_time,
                 'end_time'   => $c->end_time,
                 'capacity'   => $c->capacity,
 
-                'lesson'     => [
+                'lesson' => [
                     'id'          => $c->lesson->id,
                     'title'       => $c->lesson->title,
                     'description' => $c->lesson->description,
                     'image'       => $c->lesson->image,
                 ],
 
-                'teacher'    => [
-                    'id'    => $c->teacher->id,
-                    'name'  => $c->teacher->name,
-                    'email' => $c->teacher->email,
-                ]
+                // multiple teachers now
+                'teachers' => $c->teachers->map(fn ($t) => [
+                    'id'    => $t->id,
+                    'name'  => trim(($t->first_name ?? '').' '.($t->last_name ?? '')) ?: ($t->name ?? null),
+                    'email' => $t->email,
+                    'pivot' => [
+                        'role'       => $t->pivot->role,
+                        'is_primary' => (bool) $t->pivot->is_primary,
+                    ],
+                ])->values(),
             ]);
 
-            return response()->json([
-                'classes' => $classes,
-            ]);
-        
-       
+        return response()->json(['classes' => $classes]);
     }
 
+    // GET /api/classes/schedule
     public function schedule(): JsonResponse
     {
-        $classes = ClassModel::with(['lesson', 'teacher'])->get();
+        $classes = ClassModel::with(['lesson', 'teachers:id,first_name,last_name'])
+            ->get();
 
         $schedule = $classes->groupBy('day')
-            ->mapWithKeys(function ($group, $day) {
-                return [
-                    $day => $group
-                        ->sortBy('start_time') // sort by start_time asc within the day or $group->sortByDesc('start_time') for desc
-                        ->map(fn($c) => [
-                            'class'      => $c->lesson->title,
-                            'start_time' => $c->start_time,
-                            'end_time'   => $c->end_time,
-                            'capacity'   => $c->capacity,
-                            'teacher'    => $c->teacher->name ?? null,
-                        ])
-                        ->values()
-                ];
-            });
+            ->mapWithKeys(fn ($group, $day) => [
+                $day => $group->sortBy('start_time')->map(fn ($c) => [
+                    'class'      => $c->lesson->title,
+                    'start_time' => $c->start_time,
+                    'end_time'   => $c->end_time,
+                    'capacity'   => $c->capacity,
+                    // join teacher names (may be empty)
+                    'teachers'   => $c->teachers->map(
+                        fn ($t) => trim(($t->first_name ?? '').' '.($t->last_name ?? ''))
+                    )->filter()->values(),
+                ])->values(),
+            ]);
 
-        return response()->json([
-            'schedule' => $schedule,
-        ]);
+        return response()->json(['schedule' => $schedule]);
     }
 
-
-    public function show($id)
+    // GET /api/classes/{id}
+    public function show($id): JsonResponse
     {
-        $class = ClassModel::with(['lesson', 'teacher'])->findOrFail($id);
+        $class = ClassModel::with(['lesson', 'teachers:id,first_name,last_name,email'])
+            ->findOrFail($id);
 
-        return response()->json([
-            'class' => $class
-        ]);
+        return response()->json(['class' => $class]);
     }
 
-
-    public function store(Request $request)
+    // POST /api/classes
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'lesson_id'   => 'required|exists:lessons,id',
-            'teacher_id'  => 'required|exists:teachers,id', // 👈 Add this
-            'start_time'  => 'required|date_format:H:i:s',
-            'end_time'    => 'required|date_format:H:i:s|after:start_time',
-            'day'         => 'required|string',
-            'capacity'    => 'required|integer|min:1',
+            'lesson_id'  => 'required|exists:lessons,id',
+            'start_time' => 'required|date_format:H:i:s',
+            'end_time'   => 'required|date_format:H:i:s|after:start_time',
+            'day'        => 'required|string',
+            'capacity'   => 'required|integer|min:1',
         ]);
 
         $class = ClassModel::create($validated);
 
         return response()->json([
             'message' => 'Class created successfully',
-            'class' => $class
+            'class'   => $class->load('lesson'),
         ], 201);
     }
 
-    public function update(Request $request, $id)
+    // PUT/PATCH /api/classes/{id}
+    public function update(Request $request, $id): JsonResponse
     {
         $class = ClassModel::findOrFail($id);
 
         $validated = $request->validate([
-            'lesson_id' => 'sometimes|exists:lessons,id',
-            'teacher_id' => 'sometimes|exists:teachers,id', // ✅ Add this
+            'lesson_id'  => 'sometimes|exists:lessons,id',
             'start_time' => 'sometimes|date_format:H:i:s',
-            'end_time' => 'sometimes|date_format:H:i:s|after:start_time',
-            'day' => 'sometimes|string',
-            'capacity' => 'sometimes|integer|min:1',
+            'end_time'   => 'sometimes|date_format:H:i:s|after:start_time',
+            'day'        => 'sometimes|string',
+            'capacity'   => 'sometimes|integer|min:1',
         ]);
 
         $class->update($validated);
 
         return response()->json([
             'message' => 'Class updated successfully',
-            'class' => $class
+            'class'   => $class->fresh()->load('lesson'),
         ]);
     }
 
-    public function destroy($id)
+    // DELETE /api/classes/{id}
+    public function destroy($id): JsonResponse
     {
         $class = ClassModel::find($id);
 
-        if (!$class) {
+        if (! $class) {
             return response()->json(['deleted' => 0], 404);
         }
 
-        $deleted = $class->delete(); // returns true if deleted
+        $deleted = $class->delete();
 
         return response()->json(['deleted' => $deleted ? 1 : 0]);
     }
 
-
-    public function available()
-    {
-        return response()->json(
-            ClassModel::with('lesson')
-                ->withCount([
-                    'appointments as booked_count' => function ($q) {
-                        $q->where('status', 'booked');
-                    }
-                ])
-                ->havingRaw('booked_count < capacity')
-                ->get()
-        );
-    }
-
-    // public function students(ClassModel $class)
-    // {
-    //     return response()->json($class->students);
-    // }
-
-    public function students($id)
+    // GET /api/classes/{id}/students
+    public function students($id): JsonResponse
     {
         $class = ClassModel::findOrFail($id);
         return response()->json($class->students);
     }
 
-
-    // Add student to class
-    public function addStudent(Request $request, $id)
+    // POST /api/classes/{id}/students
+    public function addStudent(Request $request, $id): JsonResponse
     {
         $request->validate([
             'student_id' => 'required|exists:students,id',
@@ -170,8 +149,8 @@ class ClassController extends Controller
         return response()->json(['message' => 'Student added to class']);
     }
 
-    // Update student pivot (optional)
-    public function updateStudent(Request $request, $classId, $studentId)
+    // PATCH /api/classes/{classId}/students/{studentId}
+    public function updateStudent(Request $request, $classId, $studentId): JsonResponse
     {
         try {
             $class = ClassModel::findOrFail($classId);
@@ -185,12 +164,13 @@ class ClassController extends Controller
         ]);
 
         return response()->json([
-            'result' => $updated ? 1 : 0,
+            'result'  => $updated ? 1 : 0,
             'message' => $updated ? 'Student updated in class' : 'Nothing was updated',
         ]);
     }
 
-    public function patchStudent(Request $request, $classId, $studentId)
+    // PATCH (partial) /api/classes/{classId}/students/{studentId}
+    public function patchStudent(Request $request, $classId, $studentId): JsonResponse
     {
         try {
             $class = ClassModel::findOrFail($classId);
@@ -206,14 +186,13 @@ class ClassController extends Controller
         $updated = $class->students()->updateExistingPivot($studentId, $data);
 
         return response()->json([
-            'result' => $updated ? 1 : 0,
+            'result'  => $updated ? 1 : 0,
             'message' => $updated ? 'Student updated in class' : 'Nothing was updated',
         ]);
     }
 
-
-    // Remove student from class
-    public function removeStudent($classId, $studentId)
+    // DELETE /api/classes/{classId}/students/{studentId}
+    public function removeStudent($classId, $studentId): JsonResponse
     {
         try {
             $class = ClassModel::findOrFail($classId);
@@ -221,13 +200,11 @@ class ClassController extends Controller
             return response()->json(['result' => 0, 'message' => 'Class not found'], 404);
         }
 
-        $detached = $class->students()->detach($studentId); // returns number of rows affected
+        $detached = $class->students()->detach($studentId);
 
         return response()->json([
-            'result' => $detached ? 1 : 0,
+            'result'  => $detached ? 1 : 0,
             'message' => $detached ? 'Student removed from class' : 'Student not enrolled or already removed',
         ]);
     }
-
-
 }

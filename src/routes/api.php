@@ -29,7 +29,7 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\StudentClassController;
 use App\Http\Controllers\StudentAttendanceController;
 use App\Http\Controllers\StudentExerciseController;
-
+use App\Http\Controllers\TeacherClassController;
 use App\Models\ClassModel;
 
 // Public utility routes
@@ -152,11 +152,15 @@ Route::apiResource('students.payments', StudentPaymentController::class)
     ])->only(['index', 'show', 'store', 'update', 'destroy']);
 
 
+Route::apiResource('teachers', TeacherController::class);
 
 
 
-Route::apiResource('teachers', TeacherController::class)->only(['index', 'show']);
-Route::get('teachers/{id}/lessons', [TeacherController::class, 'lessons']);
+//Route::get('teachers/{teacher}/classes', [TeacherController::class, 'lessons']);
+Route::apiResource('teachers.classes', TeacherClassController::class)->parameters(['classes' => 'class']); // {class} will be bound to ClassModel
+
+
+//Route::get('teachers/{id}/lessons', [TeacherController::class, 'index']);
 Route::get('teachers-salaries', [TeacherSalaryController::class, 'index']);
 Route::get('teachers-salaries/{id}', [TeacherSalaryController::class, 'byUser']);
 Route::post('teachers-salaries', [TeacherSalaryController::class, 'store']);

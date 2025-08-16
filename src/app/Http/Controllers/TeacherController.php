@@ -3,83 +3,95 @@
 namespace App\Http\Controllers;
 
 use App\Models\Teacher;
+use App\Models\Lesson;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class TeacherController extends Controller
 {
-    public function index()
+    // GET /api/teachers
+    public function index(): JsonResponse
     {
-        return Teacher::with('user')->get(); // ✅ no 'team' relationship
+        // Eager-load relations if you have any, e.g. classes, lessons
+        $teachers = Teacher::query()
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json($teachers);
     }
 
-    public function show($id)
+    // GET /api/teachers/{teacher}
+    public function show(Teacher $teacher): JsonResponse
     {
-        $teacher = Teacher::with('user')->findOrFail($id);
         return response()->json($teacher);
     }
 
-    public function lessons($id)
+    // POST /api/teachers
+    public function store(Request $request): JsonResponse
     {
-        $teacher = Teacher::with('lessons')->findOrFail($id);
-
-        $lessons = $teacher->lessons->map(fn($lesson) => [
-            'id'          => $lesson->id,
-            'title'       => $lesson->title,
-            'description' => $lesson->description,
-            'level'       => $lesson->level,
-            'image'       => $lesson->image,
+        $request->headers->set('Accept', 'application/json'); // double-force JSON
+        $data = $request->validate([
+            'user_id'   => 'required|exists:users,id',
+            'first_name' => 'required|string|max:100',
+            'last_name'  => 'required|string|max:100',
+            'email'      => 'required|email|unique:teachers,email',
+            'phone'      => 'nullable|string|max:50',
+            'bio'        => 'nullable|string',
+            'hire_date'  => 'nullable|date',
+            'is_active'  => 'sometimes|boolean',
         ]);
 
-        return response()->json($lessons);
-    }
+        // default is_active to true if omitted
+        if (!array_key_exists('is_active', $data)) {
+            $data['is_active'] = true;
+        }
 
-
-
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'specialty' => 'nullable|string|max:255',
-            'bio' => 'nullable|string',
-            'photo' => 'nullable|string|max:255',
-            'team_id' => 'required|exists:teams,id',
-            'user_id' => 'required|exists:users,id', // ✅ Add this line
-        ]);
-
-        $teacher = Teacher::create($validated); // ✅ Will now include user_id
+        $teacher = Teacher::create($data);
 
         return response()->json([
-            'message' => 'Teacher created successfully',
-            'teacher' => $teacher
+            'message' => 'Teacher created.',
+            'data' => $teacher,
         ], 201);
     }
 
-
-    public function update(Request $request, $id)
+    // PUT/PATCH /api/teachers/{teacher}
+    public function update(Request $request, Teacher $teacher): JsonResponse
     {
-        $teacher = Teacher::findOrFail($id);
-
-        $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'specialty' => 'sometimes|string|max:255',
-            'bio' => 'sometimes|string',
-            'photo' => 'sometimes|string',
-            'team_id' => 'sometimes|exists:teams,id',
+        $request->headers->set('Accept', 'application/json'); // double-force JSON
+        $data = $request->validate([            
+            'first_name' => 'sometimes|required|string|max:100',
+            'last_name'  => 'sometimes|required|string|max:100',
+            'email'      => 'sometimes|required|email|unique:teachers,email,' . $teacher->id,
+            'phone'      => 'nullable|string|max:50',
+            'bio'        => 'nullable|string',
+            'hire_date'  => 'nullable|date',
+            'is_active'  => 'sometimes|boolean',
         ]);
 
-        $teacher->update($validated);
+        $teacher->fill($data)->save();
 
         return response()->json([
-            'message' => 'Teacher updated successfully',
-            'teacher' => $teacher
+            'message' => 'Teacher updated.',
+            'data' => $teacher->fresh(),
         ]);
     }
 
-    public function destroy($id)
+    // DELETE /api/teachers/{teacher}
+    public function destroy(Request $request,Teacher $teacher): JsonResponse
     {
-        $teacher = Teacher::findOrFail($id);
+        $request->headers->set('Accept', 'application/json'); // double-force JSON
         $teacher->delete();
 
-        return response()->json(['message' => 'Teacher deleted']);
+        return response()->json(['message' => 'Teacher deleted.']);
+    }
+
+    public function lessons(Teacher $teacher): JsonResponse
+    {
+        $lessons = Lesson::whereHas('classes', fn($q) => $q->where('teacher_id', $teacher->id))
+            ->with(['classes' => fn($q) => $q->where('teacher_id', $teacher->id)
+                ->select('id','lesson_id','teacher_id','start_time','end_time','day','capacity')])
+            ->get();
+
+        return response()->json($lessons);
     }
 }
