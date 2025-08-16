@@ -3,16 +3,22 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class TeacherSalary extends Model
 {
-    use HasFactory;
+    protected $fillable = [
+        'teacher_id','year','month','amount','due_date','is_paid','paid_at','method','notes'
+    ];
 
-    protected $fillable = ['user_id', 'amount', 'pay_date', 'note'];
+    protected $casts = [
+        'amount'   => 'decimal:2',
+        'is_paid'  => 'boolean',
+        'due_date' => 'date',
+        'paid_at'  => 'datetime',
+    ];
 
-    public function user()
+    public function teacher()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Teacher::class);
     }
 }

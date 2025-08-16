@@ -161,9 +161,12 @@ Route::apiResource('teachers.classes', TeacherClassController::class)->parameter
 
 
 //Route::get('teachers/{id}/lessons', [TeacherController::class, 'index']);
-Route::get('teachers-salaries', [TeacherSalaryController::class, 'index']);
-Route::get('teachers-salaries/{id}', [TeacherSalaryController::class, 'byUser']);
-Route::post('teachers-salaries', [TeacherSalaryController::class, 'store']);
+// Route::get('teachers-salaries', [TeacherSalaryController::class, 'index']);
+// Route::get('teachers-salaries/{id}', [TeacherSalaryController::class, 'byUser']);
+// Route::post('teachers-salaries', [TeacherSalaryController::class, 'store']);
+Route::apiResource('teachers.salaries', TeacherSalaryController::class);
+
+
 
 Route::get('/users', [UserController::class, 'index']);
 Route::get('/users/{id}', [UserController::class, 'show']);
@@ -181,6 +184,8 @@ Route::get('/exercises/{id}', [ExerciseController::class, 'apiShow']);
 
 Route::get('/attendances', [AttendanceController::class, 'apiIndex']);
 Route::get('/attendances/{id}', [AttendanceController::class, 'apiShow']);
+Route::get('/debug', fn() => response()->json(['works' => true]));
+
 
 // Protected Write Routes
 Route::middleware('auth:sanctum')->group(function () {

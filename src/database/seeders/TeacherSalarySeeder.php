@@ -12,15 +12,22 @@ class TeacherSalarySeeder extends Seeder
 {
     public function run(): void
     {
-        $teachers = Teacher::with('user')->inRandomOrder()->take(10)->get();
+        $teachers = Teacher::inRandomOrder()->take(10)->get();
 
         foreach ($teachers as $teacher) {
             for ($i = 0; $i < 3; $i++) {
+                $date = Carbon::now()->subMonths($i);
+
                 TeacherSalary::create([
-                    'user_id' => $teacher->user_id,
-                    'amount' => rand(500, 1000),
-                    'pay_date' => Carbon::now()->subDays(rand(30 * $i + 1, 30 * ($i + 1))), // spaced like monthly payments
-                    'note' => Arr::random([
+                    'teacher_id' => $teacher->id,
+                    'year'       => $date->year,
+                    'month'      => $date->month,
+                    'amount'     => rand(500, 1000),
+                    'due_date'   => $date->endOfMonth(),
+                    'is_paid'    => (bool) rand(0, 1),
+                    'paid_at'    => rand(0, 1) ? $date->copy()->addDays(rand(0,5)) : null,
+                    'method'     => Arr::random(['cash', 'bank', 'revolut']),
+                    'notes'      => Arr::random([
                         'Monthly salary',
                         'Teaching bonus',
                         'Extra hours payment',

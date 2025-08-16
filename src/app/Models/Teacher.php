@@ -50,6 +50,13 @@ class Teacher extends Model
         )->distinct();
     }
 
+
+    public function salaries()
+    {
+        return $this->hasMany(TeacherSalary::class);
+    }
+
+
  
 
 }
