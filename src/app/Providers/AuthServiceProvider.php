@@ -30,6 +30,7 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('manage-class-sessions', fn($user) => $user->role === 'admin');
         Gate::define('manage-session-exercises', fn($user) => $user->role === 'admin');
         Gate::define('manage-session-exercise-students', fn($user) => $user->role === 'admin');
+        Gate::define('manage-attendances', fn ($user) => $user->role === 'admin');
 
         // keep any other gates you need
         Gate::define('students.create', fn ($user) => $user->role === 'admin');

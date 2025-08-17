@@ -187,28 +187,23 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 
-Route::get('/attendances', [AttendanceController::class, 'apiIndex']);
-Route::get('/attendances/{id}', [AttendanceController::class, 'apiShow']);
+// Everyone can read attendances
+Route::apiResource('classes.sessions.attendances', AttendanceController::class)
+    ->only(['index','show']);
 
-Route::get('/users', [UserController::class, 'index']);
-Route::get('/users/{id}', [UserController::class, 'show']);
+// Only admins can write
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('classes.sessions.attendances', AttendanceController::class)
+        ->only(['store','update','destroy']);
+});
 
 
-// Protected Write Routes
-// Route::middleware('auth:sanctum')->group(function () {
-//     Route::apiResources([
-//         'teams' => TeamController::class,
-//         'teachers' => TeacherController::class,
-//         'students' => StudentController::class,
-//         'classes' => ClassController::class,
-//         'appointments' => AppointmentController::class,
-//         'availability' => AppointmentAvailabilityController::class,
-//         'posts' => PostController::class,
-//         'lessons' => LessonController::class,
-//         'membership-plans' => MembershipPlanController::class,
-//         'offers' => OfferController::class,
-//     ]);
-// });
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('users', UserController::class);
+});
+
+
 
 if (app()->environment(['local', 'testing'])) {
     Route::get('/routes', fn() => response()->json(collect(Route::getRoutes())->map(fn($route) => [

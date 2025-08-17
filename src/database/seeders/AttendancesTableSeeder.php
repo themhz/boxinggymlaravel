@@ -15,24 +15,28 @@ class AttendancesTableSeeder extends Seeder
             'session_id' => 1,
             'student_id' => 1,
             'status'     => 'present',
+            'note'       => 'Arrived on time',
         ]);
         // Example: mark student #2 absent for session #1
         Attendance::create([
             'session_id' => 1,
             'student_id' => 2,
             'status'     => 'absent',
+            'note'       => 'Sick',            
         ]);
         // Example: mark student #3 present for session #2
         Attendance::create([
             'session_id' => 2,
             'student_id' => 3,
             'status'     => 'present',
+            'note'       => 'On time',
         ]);
         // Example: mark student #1 absent for session #2
         Attendance::create([
             'session_id' => 2,
             'student_id' => 1,
             'status'     => 'absent',
+            'note'       => 'Family emergency',
         ]);
     }
 }

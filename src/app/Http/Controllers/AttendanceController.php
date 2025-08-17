@@ -4,164 +4,84 @@ namespace App\Http\Controllers;
 
 use App\Models\Attendance;
 use App\Models\ClassSession;
-use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 class AttendanceController extends Controller
 {
-    public function index()
+    // GET /api/classes/{class}/sessions/{session}/attendances
+    public function index($classId, $sessionId): JsonResponse
     {
-        $records = Attendance::with(['session','student'])->paginate(20);
-        return view('attendances.index', compact('records'));
-    }
+        $this->ensureSessionBelongsToClass($classId, $sessionId);
 
-    public function create()
-    {
-        $sessions = ClassSession::all();
-        $students = Student::all();
-        return view('attendances.create', compact('sessions','students'));
-    }
-
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'session_id' => 'required|exists:class_sessions,id',
-            'student_id' => 'required|exists:students,id',
-            'status'     => 'required|in:present,absent',
-        ]);
-
-        Attendance::create($data);
-
-        return redirect()->route('attendances.index')
-                         ->with('success', 'Attendance recorded.');
-    }
-
-    public function edit(Attendance $attendance)
-    {
-        $sessions = ClassSession::all();
-        $students = Student::all();
-        return view('attendances.edit', compact('attendance','sessions','students'));
-    }
-
-    public function update(Request $request, Attendance $attendance)
-    {
-        $data = $request->validate([
-            'status'     => 'required|in:present,absent',
-        ]);
-
-        $attendance->update($data);
-
-        return redirect()->route('attendances.index')
-                         ->with('success', 'Attendance updated.');
-    }
-
-    public function destroy(Attendance $attendance)
-    {
-        $attendance->delete();
-        return redirect()->route('attendances.index')
-                         ->with('success', 'Record deleted.');
-    }
-
-    public function apiBySession($sessionId): JsonResponse
-    {
-        $attendances = Attendance::with('student')
+        $rows = Attendance::with('student')
             ->where('session_id', $sessionId)
-            ->get()
-            ->map(function ($a) {
-                return [
-                    'student_id' => $a->student_id,
-                    'student_name' => $a->student->name,
-                    'status' => $a->status,
-                    'recorded_at' => $a->created_at,
-                ];
-            });
+            ->get();
 
-        return response()->json([
-            'session_id' => $sessionId,
-            'attendances' => $attendances,
-        ]);
+        return response()->json($rows);
     }
 
-    public function apiIndex(): JsonResponse
+    // GET /api/classes/{class}/sessions/{session}/attendances/{id}
+    public function show($classId, $sessionId, $id): JsonResponse
     {
-        $attendances = Attendance::with('student', 'session.relatedClass.lesson')
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($a) {
-                return [
-                    'id' => $a->id,
-                    'status' => $a->status,
-                    'recorded_at' => $a->created_at,
-                    'student' => [
-                        'id' => $a->student->id,
-                        'name' => $a->student->name,
-                    ],
-                    'session' => [
-                        'id' => $a->session->id,
-                        'date' => $a->session->session_date,
-                        'class_day' => optional($a->session->relatedClass)->day,
-                        'lesson' => optional($a->session->relatedClass->lesson)->title,
-                    ],
-                ];
-            });
+        $this->ensureSessionBelongsToClass($classId, $sessionId);
 
-        return response()->json($attendances);
-    }
-
-    public function apiByIdAndSession($attend, $sessionId): JsonResponse
-    {
-        $attendance = Attendance::with(['student', 'session.relatedClass.lesson'])
-            ->where('id', $attend)
+        $row = Attendance::with('student')
             ->where('session_id', $sessionId)
-            ->first();
+            ->findOrFail($id);
 
-        if (!$attendance) {
-            return response()->json([
-                'message' => 'Attendance record not found.'
-            ], 404);
-        }
-
-        return response()->json([
-            'id' => $attendance->id,
-            'status' => $attendance->status,
-            'recorded_at' => $attendance->created_at,
-            'student' => [
-                'id' => $attendance->student->id,
-                'name' => $attendance->student->name,
-            ],
-            'session' => [
-                'id' => $attendance->session->id,
-                'date' => $attendance->session->session_date,
-                'class_day' => optional($attendance->session->relatedClass)->day,
-                'lesson' => optional($attendance->session->relatedClass->lesson)->title,
-            ],
-        ]);
+        return response()->json($row);
     }
 
-    public function apiShow($id): JsonResponse
+    // POST /api/classes/{class}/sessions/{session}/attendances
+    public function store($classId, $sessionId, Request $request): JsonResponse
     {
-        $attendance = Attendance::with(['student', 'session.relatedClass.lesson'])
-            ->find($id);
+        $this->ensureSessionBelongsToClass($classId, $sessionId);
 
-        if (!$attendance) {
-            return response()->json(['message' => 'Attendance not found.'], 404);
-        }
-
-        return response()->json([
-            'id' => $attendance->id,
-            'status' => $attendance->status,
-            'student' => [
-                'id' => $attendance->student->id,
-                'name' => $attendance->student->name,
-            ],
-            'session' => [
-                'id' => $attendance->session->id,
-                'date' => $attendance->session->session_date,
-                'lesson' => optional($attendance->session->relatedClass->lesson)->title,
-            ]
+        $data = $request->validate([
+            'student_id' => ['required','integer','exists:students,id'],
+            'status'     => ['nullable','in:present,absent,late'],
+            'note'       => ['nullable','string','max:2000'],
         ]);
+
+        $data['session_id'] = $sessionId;
+        $row = Attendance::create($data);
+
+        return response()->json($row->load('student'), 201);
     }
 
+    // PATCH /api/classes/{class}/sessions/{session}/attendances/{id}
+    public function update($classId, $sessionId, $id, Request $request): JsonResponse
+    {
+        $this->ensureSessionBelongsToClass($classId, $sessionId);
 
+        $row = Attendance::where('session_id', $sessionId)->findOrFail($id);
+
+        $data = $request->validate([
+            'status' => ['nullable','in:present,absent,late'],
+            'note'   => ['nullable','string','max:2000'],
+        ]);
+
+        $row->update($data);
+
+        return response()->json($row->load('student'));
+    }
+
+    // DELETE /api/classes/{class}/sessions/{session}/attendances/{id}
+    public function destroy($classId, $sessionId, $id): JsonResponse
+    {
+        $this->ensureSessionBelongsToClass($classId, $sessionId);
+
+        $row = Attendance::where('session_id', $sessionId)->findOrFail($id);
+        $row->delete();
+
+        return response()->json(['deleted' => true]);
+    }
+
+    protected function ensureSessionBelongsToClass($classId, $sessionId): void
+    {
+        if (! ClassSession::where('id',$sessionId)->where('class_id',$classId)->exists()) {
+            abort(404, 'Session not found for this class');
+        }
+    }
 }
