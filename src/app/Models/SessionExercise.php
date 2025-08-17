@@ -12,8 +12,10 @@ class SessionExercise extends Model
     protected $table = 'session_exercise'; // Explicit, since it doesn’t follow Laravel’s plural rule
 
     protected $fillable = [
-        'session_id',
-        'exercise_id',
+         'session_id',
+         'exercise_id',
+         'display_order',
+         'note'
     ];
 
     public function session()
@@ -26,8 +28,8 @@ class SessionExercise extends Model
         return $this->belongsTo(Exercise::class, 'exercise_id');
     }
     
-    public function exercises()
-    {
-        return $this->hasMany(SessionExercise::class, 'session_id');
-    }
+    // public function exercises()
+    // {
+    //     return $this->hasMany(SessionExercise::class, 'session_id');
+    // }
 }

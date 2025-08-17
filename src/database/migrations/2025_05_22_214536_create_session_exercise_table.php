@@ -15,12 +15,17 @@ return new class extends Migration
             $table->id();
             $table->foreignId('session_id')
                   ->constrained('class_sessions')
-                  ->onDelete('cascade');
+                  ->cascadeOnDelete();
             $table->foreignId('exercise_id')
                   ->constrained('exercises')
-                  ->onDelete('cascade');
+                  ->cascadeOnDelete();
+
+            $table->unsignedSmallInteger('display_order')->default(1);
+            $table->text('note')->nullable();
             $table->timestamps();
-            $table->unique(['session_id','exercise_id'], 'session_exercise_unique');
+            $table->unique(['session_id','exercise_id','display_order'], 'session_exercise_unique');
+            $table->index(['session_id','display_order']);
+
         });
     }
 

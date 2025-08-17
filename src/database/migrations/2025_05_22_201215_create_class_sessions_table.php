@@ -16,7 +16,12 @@ return new class extends Migration
             $table->foreignId('class_id')
                   ->constrained('classes')
                   ->onDelete('cascade');
-            $table->date('session_date');
+
+            $table->date('date');           // session date
+            $table->time('start_time');     // start time of session
+            $table->time('end_time');       // end time of session
+            $table->text('notes')->nullable(); // optional notes
+
             $table->timestamps();
         });
     }

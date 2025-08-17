@@ -9,8 +9,10 @@ class PaymentMethod extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'description'];
-
+    protected $fillable = ['name', 'description', 'active'];
+    protected $casts = [
+        'active' => 'boolean',
+    ];
     public function studentPayments()
     {
         return $this->hasMany(StudentPayment::class);

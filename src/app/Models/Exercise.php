@@ -12,7 +12,7 @@ class Exercise extends Model
     protected $fillable = [
         'name',
         'description',     
-        'repetitions',
+        'exercise_type',
     ];
 
     public function students()

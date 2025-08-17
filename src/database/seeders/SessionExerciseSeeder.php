@@ -1,29 +1,26 @@
 <?php
-
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\ClassSession;
-use App\Models\Exercise;
-use App\Models\SessionExercise;
+use App\Models\{SessionExercise, ClassSession, Exercise};
+
 class SessionExerciseSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $sessions = ClassSession::all();
-        $exerciseIds = Exercise::pluck('id')->toArray();
+        $sessions  = ClassSession::inRandomOrder()->take(3)->get();
+        $exercises = Exercise::inRandomOrder()->take(5)->get();
+
+        if ($sessions->isEmpty() || $exercises->isEmpty()) return;
 
         foreach ($sessions as $session) {
-            $randomExercises = collect($exerciseIds)->random(rand(2, 5))->toArray();
-
-            foreach ($randomExercises as $exerciseId) {
-                SessionExercise::firstOrCreate([
-                    'session_id' => $session->id,
-                    'exercise_id' => $exerciseId,
+            $order = 1;
+            foreach ($exercises as $ex) {
+                SessionExercise::create([
+                    'session_id'    => $session->id,
+                    'exercise_id'   => $ex->id,
+                    'display_order' => $order++,
+                    'note'          => 'Auto-generated session exercise',
                 ]);
             }
         }

@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Lesson extends Model
 {
+    use HasFactory;
+
    public function classes()
     {
         return $this->hasMany(ClassModel::class, 'lesson_id');

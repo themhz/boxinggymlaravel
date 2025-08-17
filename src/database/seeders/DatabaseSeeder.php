@@ -20,8 +20,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             TeacherSeeder::class,    
             StudentSeeder::class,
-            PaymentMethodsTableSeeder::class, 
-            //SubscriptionSeeder::class,
+            PaymentMethodsTableSeeder::class,             
             MembershipPlanSeeder::class,
             OfferSeeder::class,
             LessonSeeder::class,
@@ -35,6 +34,8 @@ class DatabaseSeeder extends Seeder
             StudentExerciseSeeder::class,            
             ClassExceptionSeeder::class,
             ClassTeacherSeeder::class,
+            SessionExerciseSeeder::class,            
+            SessionExerciseStudentsSeeder::class
         ]);
 
         // Create or update the admin user

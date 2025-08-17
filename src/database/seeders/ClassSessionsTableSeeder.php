@@ -8,22 +8,17 @@ use Carbon\Carbon;
 
 class ClassSessionsTableSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
-        // Example session for Class #1 tomorrow
-        ClassSession::create([
-            'class_id'    => 1,
-            'session_date'=> Carbon::now()->addDay(),
-        ]);
-
-        ClassSession::create([
-            'class_id'    => 2,
-            'session_date'=> Carbon::now()->addDay(),
-        ]);
-        
-        ClassSession::create([
-            'class_id'    => 3,
-            'session_date'=> Carbon::now()->addDay(),
-        ]);
+        // Create 20 sessions spread over different classes & days
+        for ($i = 1; $i <= 20; $i++) {
+            ClassSession::create([
+                'class_id'   => rand(1, 5), // assuming you have at least 5 classes
+                'date'       => Carbon::now()->addDays(rand(1, 30)), // within the next 30 days
+                'start_time' => Carbon::createFromTime(rand(8, 20), [0, 30][rand(0, 1)]), // random hour between 8:00 and 20:30
+                'end_time'   => Carbon::createFromTime(rand(8, 20), [0, 30][rand(0, 1)]), // random end time
+                'notes'      => 'Auto-generated session ' . $i,
+            ]);
+        }
     }
 }

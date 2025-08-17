@@ -14,7 +14,12 @@ class Offer extends Model
         'starts_at',
         'ends_at',
     ];
-
+    protected $casts = [
+        'discount_amount'  => 'decimal:2',
+        'discount_percent' => 'decimal:2',
+        'starts_at' => 'datetime',
+        'ends_at'   => 'datetime',
+    ];
     public function plan()
     {
         return $this->belongsTo(MembershipPlan::class, 'membership_plan_id');

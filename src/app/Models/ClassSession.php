@@ -7,15 +7,20 @@ use Illuminate\Database\Eloquent\Model;
 
 class ClassSession extends Model
 {
-     use HasFactory;
+    use HasFactory;
 
     protected $fillable = [
         'class_id',
-        'session_date',
+        'date',
+        'start_time',
+        'end_time',
+        'notes',
     ];
 
     protected $casts = [
-        'session_date' => 'date',
+        'date'       => 'date',
+        'start_time' => 'datetime:H:i',
+        'end_time'   => 'datetime:H:i',
     ];
 
     public function class()
@@ -27,23 +32,15 @@ class ClassSession extends Model
     {
         return $this->hasMany(Attendance::class, 'session_id');
     }
-    // public function exercises()
-    // {
-    //     return $this->belongsToMany(Exercise::class, 'session_exercise')
-    //                 ->withTimestamps();
-    // }
 
     public function exercises()
     {
         return $this->hasMany(SessionExercise::class, 'session_id');
-    }    
+    }
 
-    // In ClassSession.php
+    // If you still want an alias
     public function relatedClass()
     {
         return $this->belongsTo(ClassModel::class, 'class_id');
     }
-    
-
-
 }

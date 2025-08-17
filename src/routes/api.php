@@ -30,33 +30,12 @@ use App\Http\Controllers\StudentClassController;
 use App\Http\Controllers\StudentAttendanceController;
 use App\Http\Controllers\StudentExerciseController;
 use App\Http\Controllers\TeacherClassController;
+use App\Http\Controllers\SessionExerciseController;
+use App\Http\Controllers\SessionExerciseStudentController;
+
 use App\Models\ClassModel;
 
-// Public utility routes
-Route::post('/appointments/book', fn(Request $request) => response()->json([
-    'status' => 'success',
-    'message' => 'Appointment received (mock response)',
-    'data' => tap($request->all(), fn($data) => Log::info('Appointment booked:', $data))
-]));
 
-Route::post('/contact-message', fn(Request $request) => response()->json([
-    'message' => 'Message received successfully!'
-]));
-
-Route::post('/signup-preview', fn(Request $request) => response()->json(['status' => 'ok']));
-
-Route::get('/contact-info', fn() => response()->json([
-    'hero' => [
-        'title' => 'Contact Us',
-        'subtitle' => 'We\'d love to hear from you!'
-    ],
-    'location' => [
-        'address' => '123 Gym Street, City',
-        'phone' => '(123) 456-7890',
-        'email' => 'info@yourgym.com',
-        'map' => 'https://www.google.com/maps/embed?...'
-    ]
-]));
 
 // Auth
 Route::post('/register', [AuthController::class, 'register']);
@@ -69,7 +48,7 @@ Route::get('/reset-password', fn(Request $r) => response()->json([
     'token' => $r->query('token'),
     'email' => $r->query('email'),
 ]))->name('password.reset');
-
+Route::middleware('auth:sanctum')->get('/users/me', fn(\Illuminate\Http\Request $r) => $r->user());
 // Authenticated routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', fn(Request $r) => tap($r->user()->currentAccessToken()->delete(), fn() => response()->json(['message' => 'Logged out successfully'])));
@@ -128,23 +107,12 @@ Route::apiResource('classes-exceptions', ClassExceptionController::class)->only(
 Route::post('lessons', [LessonController::class, 'store']);
 Route::put('lessons/{id}', [LessonController::class, 'update']);
 Route::apiResource('lessons', LessonController::class)->only(['index', 'show']);
-
-
-
 Route::get('lessons-teachers', [LessonController::class, 'withTeachers']);
-//Route::apiResource('students', StudentController::class)->only(['index', 'show']);
 
 
 Route::apiResource('students', StudentController::class);
 Route::apiResource('students.attendance', StudentAttendanceController::class)->only(['index', 'store', 'update', 'destroy', 'show']);
 
-
-
-//Route::get('students/{id}/classes', [StudentController::class, 'studentClasses']);
-//Route::apiResource('students.classes', StudentClassController::class)->only(['index','store','update','destroy']); 
-//Route::apiResource('students.exercises', StudentExerciseController::class)->only(['index', 'store', 'update', 'destroy']);
-//Route::apiResource('students.payments', StudentPaymentController::class);
-// routes/api.php
 Route::apiResource('students.payments', StudentPaymentController::class)
     ->parameters([
         'students' => 'user',        // bind {students} to App\Models\User
@@ -153,55 +121,94 @@ Route::apiResource('students.payments', StudentPaymentController::class)
 
 
 Route::apiResource('teachers', TeacherController::class);
-
-
-
-//Route::get('teachers/{teacher}/classes', [TeacherController::class, 'lessons']);
 Route::apiResource('teachers.classes', TeacherClassController::class)->parameters(['classes' => 'class']); // {class} will be bound to ClassModel
-
-
-//Route::get('teachers/{id}/lessons', [TeacherController::class, 'index']);
-// Route::get('teachers-salaries', [TeacherSalaryController::class, 'index']);
-// Route::get('teachers-salaries/{id}', [TeacherSalaryController::class, 'byUser']);
-// Route::post('teachers-salaries', [TeacherSalaryController::class, 'store']);
 Route::apiResource('teachers.salaries', TeacherSalaryController::class);
 
 
+// Public (read-only)
+Route::apiResource('membership-plans', MembershipPlanController::class)
+    ->only(['index','show']);
+// Admin (write)
+Route::middleware(['auth:sanctum','can:manage-membership-plans'])->group(function () {
+    Route::apiResource('membership-plans', MembershipPlanController::class)->only(['store','update','destroy']);
+});
+
+// public read
+Route::apiResource('offers', OfferController::class)->only(['index','show']);
+// admin write
+Route::middleware(['auth:sanctum','can:manage-offers'])->group(function () {
+    Route::apiResource('offers', OfferController::class)->only(['store','update','destroy']);
+});
+
+// public read
+Route::apiResource('payment-methods', PaymentMethodController::class)->only(['index','show']);
+// admin write
+Route::middleware(['auth:sanctum','can:manage-payment-methods'])->group(function () {
+    Route::apiResource('payment-methods', PaymentMethodController::class)->only(['store','update','destroy']);
+});
+
+// public read
+Route::apiResource('exercises', ExerciseController::class)->only(['index','show']);
+
+// admin write
+Route::middleware(['auth:sanctum','can:manage-exercises'])->group(function () {
+    Route::apiResource('exercises', ExerciseController::class)->only(['store','update','destroy']);
+});
+
+
+// Everyone can read sessions
+Route::apiResource('classes.sessions', ClassSessionController::class)
+    ->only(['index', 'show']);
+
+// Only admins (via Sanctum + Gate) can write sessions
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('classes.sessions', ClassSessionController::class)
+        ->only(['store', 'update', 'destroy']);
+});
+
+// Everyone can read session exercises
+Route::apiResource('classes.sessions.exercises', SessionExerciseController::class)
+    ->only(['index', 'show']);
+
+// Only admins can write session exercises
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('classes.sessions.exercises', SessionExerciseController::class)
+        ->only(['store', 'update', 'destroy']);
+});
+
+
+Route::apiResource('session-exercise-students', SessionExerciseStudentController::class)
+    ->only(['index','show']);
+
+// Only admins can write session_exercise_students
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('session-exercise-students', SessionExerciseStudentController::class)
+        ->only(['store','update','destroy']);
+});
+
+
+Route::get('/attendances', [AttendanceController::class, 'apiIndex']);
+Route::get('/attendances/{id}', [AttendanceController::class, 'apiShow']);
 
 Route::get('/users', [UserController::class, 'index']);
 Route::get('/users/{id}', [UserController::class, 'show']);
 
-Route::apiResource('membership-plans', MembershipPlanController::class)->only(['index', 'show']);
-Route::apiResource('offers', OfferController::class)->only(['index', 'show']);
-Route::get('/payment-methods', [PaymentMethodController::class, 'index']);
-
-Route::get('/sessions', [ClassSessionController::class, 'apiIndex']);
-Route::get('/sessions/{id}', [ClassSessionController::class, 'apiShow']);
-Route::get('/sessions/{id}/exercises', [ClassSessionController::class, 'apiSessionExercises']);
-
-Route::get('/exercises', [ExerciseController::class, 'apiIndex']);
-Route::get('/exercises/{id}', [ExerciseController::class, 'apiShow']);
-
-Route::get('/attendances', [AttendanceController::class, 'apiIndex']);
-Route::get('/attendances/{id}', [AttendanceController::class, 'apiShow']);
-Route::get('/debug', fn() => response()->json(['works' => true]));
-
 
 // Protected Write Routes
-Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResources([
-        'teams' => TeamController::class,
-        'teachers' => TeacherController::class,
-        'students' => StudentController::class,
-        'classes' => ClassController::class,
-        'appointments' => AppointmentController::class,
-        'availability' => AppointmentAvailabilityController::class,
-        'posts' => PostController::class,
-        'lessons' => LessonController::class,
-        'membership-plans' => MembershipPlanController::class,
-        'offers' => OfferController::class,
-    ]);
-});
+// Route::middleware('auth:sanctum')->group(function () {
+//     Route::apiResources([
+//         'teams' => TeamController::class,
+//         'teachers' => TeacherController::class,
+//         'students' => StudentController::class,
+//         'classes' => ClassController::class,
+//         'appointments' => AppointmentController::class,
+//         'availability' => AppointmentAvailabilityController::class,
+//         'posts' => PostController::class,
+//         'lessons' => LessonController::class,
+//         'membership-plans' => MembershipPlanController::class,
+//         'offers' => OfferController::class,
+//     ]);
+// });
 
 if (app()->environment(['local', 'testing'])) {
     Route::get('/routes', fn() => response()->json(collect(Route::getRoutes())->map(fn($route) => [
@@ -215,3 +222,4 @@ if (app()->environment(['local', 'testing'])) {
 
 Route::any('/test-route', fn() => response()->json(['message' => 'Fallback route working']));
 Route::post('/debug-reset', fn() => response()->json(['message' => 'You hit the API route!']));
+Route::get('/debug', fn() => response()->json(['works' => true]));

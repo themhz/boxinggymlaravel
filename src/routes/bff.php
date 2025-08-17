@@ -6,6 +6,8 @@ use App\Http\Controllers\Bff\ClassespageBffController;
 use App\Http\Controllers\MembershipPlanController;
 use App\Models\MembershipPlan;
 use App\Models\Offer;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 Route::get('/homepage', HomepageBffController::class);
 
@@ -107,3 +109,30 @@ Route::get('/appointments', function () {
         "12:55" => [ "Mon" => true,  "Tue" => false,  "Wed" => false,  "Thu" => false,  "Fri" => false,  "Sat" => false, "Sun" => false ],        
     ]);
 });
+
+
+// Public utility routes
+Route::post('/appointments/book', fn(Request $request) => response()->json([
+    'status' => 'success',
+    'message' => 'Appointment received (mock response)',
+    'data' => tap($request->all(), fn($data) => Log::info('Appointment booked:', $data))
+]));
+
+Route::post('/contact-message', fn(Request $request) => response()->json([
+    'message' => 'Message received successfully!'
+]));
+
+Route::post('/signup-preview', fn(Request $request) => response()->json(['status' => 'ok']));
+
+Route::get('/contact-info', fn() => response()->json([
+    'hero' => [
+        'title' => 'Contact Us',
+        'subtitle' => 'We\'d love to hear from you!'
+    ],
+    'location' => [
+        'address' => '123 Gym Street, City',
+        'phone' => '(123) 456-7890',
+        'email' => 'info@yourgym.com',
+        'map' => 'https://www.google.com/maps/embed?...'
+    ]
+]));
