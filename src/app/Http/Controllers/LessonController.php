@@ -50,9 +50,7 @@ class LessonController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'level' => 'nullable|string|max:50',
-            'image' => 'nullable|string|max:255',
-            'teacher_ids' => 'required|array',
-            'teacher_ids.*' => 'exists:teachers,id',
+            'image' => 'nullable|string|max:255',            
         ]);
 
         if ($validator->fails()) {
@@ -71,7 +69,7 @@ class LessonController extends Controller
             'image' => $validated['image'] ?? null,
         ]);
 
-        $lesson->teachers()->attach($validated['teacher_ids']);
+        //$lesson->teachers()->attach($validated['teacher_ids']);
 
         return response()->json([
             'message' => 'Lesson created successfully',
