@@ -21,24 +21,24 @@ class StudentController extends Controller
         return response()->json($student);
     }
 
-    public function studentClasses($id)
-    {
-        $student = Student::with('classes.lesson')->findOrFail($id);
+    // public function studentClasses($id)
+    // {
+    //     $student = Student::with('classes.lesson')->findOrFail($id);
 
-        $uniqueLessons = $student->classes 
-            ->map(fn($class) => $class->lesson)
-            ->unique('id')
-            ->values()
-            ->map(fn($lesson) => [
-                'id'          => $lesson->id,
-                'title'       => $lesson->title,
-                'description' => $lesson->description,
-                'level'       => $lesson->level,
-                'image'       => $lesson->image,
-            ]);
+    //     $uniqueLessons = $student->classes 
+    //         ->map(fn($class) => $class->lesson)
+    //         ->unique('id')
+    //         ->values()
+    //         ->map(fn($lesson) => [
+    //             'id'          => $lesson->id,
+    //             'title'       => $lesson->title,
+    //             'description' => $lesson->description,
+    //             'level'       => $lesson->level,
+    //             'image'       => $lesson->image,
+    //         ]);
 
-        return response()->json($uniqueLessons);
-    }
+    //     return response()->json($uniqueLessons);
+    // }
 
     public function store(Request $request)
     {

@@ -7,7 +7,7 @@ use App\Models\ClassSession;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
-class AttendanceController extends Controller
+class ClassSessionAttendanceController extends Controller
 {
     // GET /api/classes/{class}/sessions/{session}/attendances
     public function index($classId, $sessionId): JsonResponse

@@ -25,7 +25,7 @@ use App\Http\Controllers\OfferController;
 use App\Http\Controllers\StudentPaymentController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\ExerciseController;
-use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\ClassSessionAttendanceController;
 use App\Http\Controllers\StudentClassController;
 use App\Http\Controllers\StudentAttendanceController;
 use App\Http\Controllers\StudentExerciseController;
@@ -188,12 +188,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 // Everyone can read attendances
-Route::apiResource('classes.sessions.attendances', AttendanceController::class)
+Route::apiResource('classes.sessions.attendances', ClassSessionAttendanceController::class)
     ->only(['index','show']);
 
 // Only admins can write
 Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('classes.sessions.attendances', AttendanceController::class)
+    Route::apiResource('classes.sessions.attendances', ClassSessionAttendanceController::class)
         ->only(['store','update','destroy']);
 });
 

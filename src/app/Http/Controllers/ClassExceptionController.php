@@ -69,6 +69,8 @@ class ClassExceptionController extends Controller
             'is_cancelled'        => 'sometimes|required|boolean',
             'override_start_time' => 'sometimes|required|date_format:H:i:s',
             'override_end_time'   => 'sometimes|required|date_format:H:i:s',
+            'reason'              => 'nullable|string|max:255', // ⬅️ add this
+
         ]);
 
         // Force-set the field to make sure it's picked up

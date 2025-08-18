@@ -87,11 +87,17 @@ class TeacherController extends Controller
 
     public function lessons(Teacher $teacher): JsonResponse
     {
-        $lessons = Lesson::whereHas('classes', fn($q) => $q->where('teacher_id', $teacher->id))
-            ->with(['classes' => fn($q) => $q->where('teacher_id', $teacher->id)
-                ->select('id','lesson_id','teacher_id','start_time','end_time','day','capacity')])
+        $lessons = Lesson::whereHas('classes.teachers', function ($q) use ($teacher) {
+                $q->where('teachers.id', $teacher->id);
+            })
+            ->with(['classes' => function ($q) use ($teacher) {
+                $q->whereHas('teachers', fn ($q2) => $q2->where('teachers.id', $teacher->id))
+                ->select('id','lesson_id','start_time','end_time','day','capacity');
+            }])
             ->get();
 
         return response()->json($lessons);
     }
+
+
 }
