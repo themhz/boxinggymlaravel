@@ -99,8 +99,7 @@ class TeacherSalaryController extends Controller
 
 
     public function destroy(Request $request, Teacher $teacher, TeacherSalary $salary): JsonResponse
-    {
-        die("ok");
+    {        
         $request->headers->set('Accept', 'application/json'); // double-force JSON
         if ($salary->teacher_id !== $teacher->id) {
             return response()->json(['message'=>'Not found'],404);
