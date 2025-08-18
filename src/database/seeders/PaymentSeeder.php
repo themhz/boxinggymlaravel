@@ -14,41 +14,36 @@ class PaymentSeeder extends Seeder
 {
     public function run(): void
     {
-        // ✅ Ensure various payment methods exist
+        // ensure payment methods
         $methods = [
-            ['name' => 'cash', 'description' => 'Paid with cash'],
-            ['name' => 'credit_card', 'description' => 'Paid via credit/debit card'],
+            ['name' => 'cash',          'description' => 'Paid with cash'],
+            ['name' => 'credit_card',   'description' => 'Paid via credit/debit card'],
             ['name' => 'bank_transfer', 'description' => 'Paid via bank transfer'],
-            ['name' => 'paypal', 'description' => 'Paid via PayPal'],
+            ['name' => 'paypal',        'description' => 'Paid via PayPal'],
         ];
-
         foreach ($methods as $method) {
-            PaymentMethod::firstOrCreate(
-                ['name' => $method['name']],
-                ['description' => $method['description']]
-            );
+            PaymentMethod::firstOrCreate(['name' => $method['name']], ['description' => $method['description']]);
         }
 
-        // ✅ Fetch required data
         $paymentMethodIds = PaymentMethod::pluck('id')->toArray();
-        $membershipPlan = MembershipPlan::first();
-        $offer = Offer::first();
-        $students = Student::with('user')->inRandomOrder()->take(30)->get();
+        $membershipPlan   = MembershipPlan::first();
+        $offer            = Offer::first();
 
-        // ✅ Create 30 payments
+        $students = Student::inRandomOrder()->take(30)->get();
+
         foreach ($students as $student) {
             for ($i = 0; $i < 3; $i++) {
                 $start = now()->subDays(rand(10, 60));
-                $end = (clone $start)->addDays($membershipPlan->duration_days);
+                $end   = (clone $start)->addDays(optional($membershipPlan)->duration_days ?? 30);
 
                 StudentPayment::create([
-                    'user_id' => $student->user_id,
+                    'student_id'        => $student->id,                       // ⬅️ CHANGED
                     'payment_method_id' => Arr::random($paymentMethodIds),
-                    'membership_plan_id' => $membershipPlan->id,
-                    'offer_id' => $offer->id,
-                    'start_date' => $start,
-                    'end_date' => $end,
-                    'amount' => $membershipPlan->price,
+                    'membership_plan_id'=> optional($membershipPlan)->id,
+                    'offer_id'          => optional($offer)->id,
+                    'start_date'        => $start->toDateString(),
+                    'end_date'          => $end->toDateString(),
+                    'amount'            => optional($membershipPlan)->price ?? 50.00,
                 ]);
             }
         }

@@ -69,15 +69,88 @@ Route::get('/email/verify/{id}/{hash}', fn(EmailVerificationRequest $request) =>
     ->name('verification.verify');
 
 
-// Public (read-only)
+//STUDENTS   
+//Public
 Route::apiResource('students', StudentController::class)
     ->only(['index','show']);
 
-// Admin (write)
+//Admin
 Route::middleware(['auth:sanctum','can:manage-students'])->group(function () {
     Route::apiResource('students', StudentController::class)
         ->only(['store','update','destroy']);
 });
+
+//CLASSES
+//Public
+Route::apiResource('classes', ClassController::class)
+    ->only(['index','show']);
+
+//Admin
+Route::middleware(['auth:sanctum','can:manage-classes'])->group(function () {
+    Route::apiResource('classes', ClassController::class)
+        ->only(['store','update','destroy']);
+});
+
+//LESSONS
+//Public
+Route::apiResource('lessons', LessonController::class)
+    ->only(['index','show']);
+
+//Admin
+Route::middleware(['auth:sanctum','can:manage-lessons'])->group(function () {
+    Route::apiResource('lessons', LessonController::class)
+        ->only(['store','update','destroy']);
+});
+
+//TEACHERS
+//Public
+Route::apiResource('teachers', TeacherController::class)
+    ->only(['index','show']);
+
+//Admin
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::apiResource('teachers', TeacherController::class)
+        ->only(['store','update','destroy']);
+});
+
+//EXERCISES
+//Public
+Route::apiResource('exercises', ExerciseController::class)->only(['index','show']);
+
+//Admin
+Route::middleware(['auth:sanctum','can:manage-exercises'])->group(function () {
+    Route::apiResource('exercises', ExerciseController::class)->only(['store','update','destroy']);
+});
+
+
+//OFFERS
+//Public
+Route::apiResource('offers', OfferController::class)->only(['index','show']);
+//Admin
+Route::middleware(['auth:sanctum','can:manage-offers'])->group(function () {
+    Route::apiResource('offers', OfferController::class)->only(['store','update','destroy']);
+});
+
+//USERS
+//Admin
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('users', UserController::class);
+});
+
+//STUDENT PAYMENTS
+// Public
+Route::apiResource('students.payments', StudentPaymentController::class)
+    ->only(['index','show']);
+
+//Admin
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::apiResource('students.payments', StudentPaymentController::class)
+        ->only(['store','update','destroy']);
+});
+
+
+
+// we continue with student-exercises
 
 
 
@@ -97,18 +170,6 @@ Route::delete('classes/{classId}/students/{studentId}', [ClassController::class,
 
 
 
-
-// Public (read-only)
-Route::apiResource('classes', ClassController::class)
-    ->only(['index','show']);
-
-// Admin (write)
-Route::middleware(['auth:sanctum','can:manage-classes'])->group(function () {
-    Route::apiResource('classes', ClassController::class)
-        ->only(['store','update','destroy']);
-});
-
-
 // Class Sessions & Exceptions
 Route::get('classes-sessions', [ClassSessionController::class, 'apiClassesWithSessions']);
 Route::get('classes-sessions/{id}', [ClassSessionController::class, 'apiClassSessionsById']);
@@ -121,15 +182,6 @@ Route::delete('classes-sessions/{id}', [ClassSessionController::class, 'apiDestr
 Route::apiResource('classes-exceptions', ClassExceptionController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
 
 
-// Public (read-only)
-Route::apiResource('lessons', LessonController::class)
-    ->only(['index','show']);
-
-// Admin (write)
-Route::middleware(['auth:sanctum','can:manage-lessons'])->group(function () {
-    Route::apiResource('lessons', LessonController::class)
-        ->only(['store','update','destroy']);
-});
 
 // Extra public read endpoint
 //Route::get('lessons-teachers', [LessonController::class, 'withTeachers']);
@@ -138,16 +190,36 @@ Route::middleware(['auth:sanctum','can:manage-lessons'])->group(function () {
 
 Route::apiResource('students.attendance', StudentAttendanceController::class)->only(['index', 'store', 'update', 'destroy', 'show']);
 
-Route::apiResource('students.payments', StudentPaymentController::class)
-    ->parameters([
-        'students' => 'user',        // bind {students} to App\Models\User
-        'payments' => 'payment',     // bind {payment} to App\Models\StudentPayment
-    ])->only(['index', 'show', 'store', 'update', 'destroy']);
+// Route::apiResource('students.payments', StudentPaymentController::class)
+//     ->parameters([
+//         'students' => 'user',        // bind {students} to App\Models\User
+//         'payments' => 'payment',     // bind {payment} to App\Models\StudentPayment
+//     ])->only(['index', 'show', 'store', 'update', 'destroy']);
 
 
-Route::apiResource('teachers', TeacherController::class);
-Route::apiResource('teachers.classes', TeacherClassController::class)->parameters(['classes' => 'class']); // {class} will be bound to ClassModel
-Route::apiResource('teachers.salaries', TeacherSalaryController::class);
+
+
+// TEACHERS → CLASSES (pivot/controller)
+// Public read
+Route::apiResource('teachers.classes', TeacherClassController::class)
+    ->parameters(['classes' => 'class'])
+    ->only(['index','show']);
+// Authenticated write
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::apiResource('teachers.classes', TeacherClassController::class)
+        ->parameters(['classes' => 'class'])
+        ->only(['store','update','destroy']);
+});
+
+// TEACHERS → SALARIES
+// Public read
+Route::apiResource('teachers.salaries', TeacherSalaryController::class)
+    ->only(['index','show']);
+// Authenticated write
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::apiResource('teachers.salaries', TeacherSalaryController::class)
+        ->only(['store','update','destroy']);
+});
 
 
 // Public (read-only)
@@ -158,12 +230,7 @@ Route::middleware(['auth:sanctum','can:manage-membership-plans'])->group(functio
     Route::apiResource('membership-plans', MembershipPlanController::class)->only(['store','update','destroy']);
 });
 
-// public read
-Route::apiResource('offers', OfferController::class)->only(['index','show']);
-// admin write
-Route::middleware(['auth:sanctum','can:manage-offers'])->group(function () {
-    Route::apiResource('offers', OfferController::class)->only(['store','update','destroy']);
-});
+
 
 // public read
 Route::apiResource('payment-methods', PaymentMethodController::class)->only(['index','show']);
@@ -172,13 +239,6 @@ Route::middleware(['auth:sanctum','can:manage-payment-methods'])->group(function
     Route::apiResource('payment-methods', PaymentMethodController::class)->only(['store','update','destroy']);
 });
 
-// public read
-Route::apiResource('exercises', ExerciseController::class)->only(['index','show']);
-
-// admin write
-Route::middleware(['auth:sanctum','can:manage-exercises'])->group(function () {
-    Route::apiResource('exercises', ExerciseController::class)->only(['store','update','destroy']);
-});
 
 
 // Everyone can read sessions
@@ -223,10 +283,6 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 
-
-Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('users', UserController::class);
-});
 
 
 

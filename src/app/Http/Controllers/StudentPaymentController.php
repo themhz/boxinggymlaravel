@@ -3,45 +3,34 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\User;
-use App\Models\StudentPayment;
 use Illuminate\Http\JsonResponse;
+use App\Models\Student;
+use App\Models\StudentPayment;
 
 class StudentPaymentController extends Controller
 {
-    /**
-     * GET /api/students/{user}/payments
-     * List all payments for a specific user (student).
-     */
-    public function index(User $user): JsonResponse
+    // GET /api/students/{student}/payments
+    public function index(Student $student): JsonResponse
     {
         $payments = StudentPayment::with(['membershipPlan','offer','paymentMethod'])
-        ->where('user_id', $user->id)
-        ->orderByDesc('created_at')
-        ->get();
+            ->where('student_id', $student->id)
+            ->orderByDesc('created_at')
+            ->get();
+
         return response()->json($payments);
     }
 
-    /**
-     * GET /api/students/{user}/payments/{payment}
-     * Show a specific payment (and ensure it belongs to the user).
-     */
-    public function show(User $user, StudentPayment $payment): JsonResponse
+    // GET /api/students/{student}/payments/{payment}
+    public function show(Student $student, StudentPayment $payment): JsonResponse
     {
-        return response()->json(
-            $payment->load(['membershipPlan','offer','paymentMethod'])
-        );
-
-        return response()->json(
-            $payment->load(['membership_plan','offer','payment_method'])
-        );
+        if ($payment->student_id !== $student->id) {
+            return response()->json(['message' => 'Not found'], 404);
+        }
+        return response()->json($payment->load(['membershipPlan','offer','paymentMethod']));
     }
 
-    /**
-     * POST /api/students/{user}/payments
-     * Create a new payment for the user.
-     */
-    public function store(Request $request, User $user): JsonResponse
+    // POST /api/students/{student}/payments
+    public function store(Request $request, Student $student): JsonResponse
     {
         $data = $request->validate([
             'membership_plan_id' => 'required|exists:membership_plans,id',
@@ -53,13 +42,13 @@ class StudentPaymentController extends Controller
         ]);
 
         $payment = StudentPayment::create([
-            'user_id'           => $user->id,
-            'membership_plan_id'=> $data['membership_plan_id'],
-            'offer_id'          => $data['offer_id'] ?? null,
-            'payment_method_id' => $data['payment_method_id'],
-            'start_date'        => $data['start_date'],
-            'end_date'          => $data['end_date'],
-            'amount'            => $data['amount'],
+            'student_id'         => $student->id,                // ⬅️ CHANGED
+            'membership_plan_id' => $data['membership_plan_id'],
+            'offer_id'           => $data['offer_id'] ?? null,
+            'payment_method_id'  => $data['payment_method_id'],
+            'start_date'         => $data['start_date'],
+            'end_date'           => $data['end_date'],
+            'amount'             => $data['amount'],
         ]);
 
         return response()->json([
@@ -68,19 +57,16 @@ class StudentPaymentController extends Controller
         ], 201);
     }
 
-    /**
-     * PUT/PATCH /api/students/{user}/payments/{payment}
-     * Update an existing payment (partial updates allowed).
-     */
-    public function update(Request $request, User $user, StudentPayment $payment): JsonResponse
+    // PUT/PATCH /api/students/{student}/payments/{payment}
+    public function update(Request $request, Student $student, StudentPayment $payment): JsonResponse
     {
-        if ($payment->user_id !== $user->id) {
+        if ($payment->student_id !== $student->id) {
             return response()->json(['message' => 'Not found'], 404);
         }
 
         $data = $request->validate([
             'membership_plan_id' => 'sometimes|required|exists:membership_plans,id',
-            'offer_id'           => 'nullable|exists:offers,id',
+            'offer_id'           => 'sometimes|nullable|exists:offers,id',
             'payment_method_id'  => 'sometimes|required|exists:payment_methods,id',
             'start_date'         => 'sometimes|required|date',
             'end_date'           => 'sometimes|required|date|after_or_equal:start_date',
@@ -95,13 +81,10 @@ class StudentPaymentController extends Controller
         ]);
     }
 
-    /**
-     * DELETE /api/students/{user}/payments/{payment}
-     * Delete a payment (ownership check).
-     */
-    public function destroy(User $user, StudentPayment $payment): JsonResponse
+    // DELETE /api/students/{student}/payments/{payment}
+    public function destroy(Student $student, StudentPayment $payment): JsonResponse
     {
-        if ($payment->user_id !== $user->id) {
+        if ($payment->student_id !== $student->id) {
             return response()->json(['message' => 'Not found'], 404);
         }
 

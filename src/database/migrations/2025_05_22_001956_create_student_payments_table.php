@@ -13,12 +13,15 @@ return new class extends Migration
     {
         Schema::create('student_payments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');            
 
-            // 🔧 Make these nullable
-            $table->foreignId('membership_plan_id')->nullable()->constrained()->onDelete('cascade');
-            $table->foreignId('offer_id')->nullable()->constrained()->onDelete('cascade');
-            $table->foreignId('payment_method_id')->constrained('payment_methods')->onDelete('cascade');
+            // 🔁 CHANGED: student_id (FK -> students)
+            $table->foreignId('student_id')->constrained('students')->cascadeOnDelete();
+
+            // related FKs
+            $table->foreignId('membership_plan_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignId('offer_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignId('payment_method_id')->constrained('payment_methods')->cascadeOnDelete();
+
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
 
