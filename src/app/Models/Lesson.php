@@ -7,23 +7,22 @@ use Illuminate\Database\Eloquent\Model;
 class Lesson extends Model
 {
     use HasFactory;
+    protected $fillable = ['title','description','level','image'];
 
-   public function classes()
+    public function classes()
     {
         return $this->hasMany(ClassModel::class, 'lesson_id');
     }
 
-    // Teachers who teach this lesson, inferred via classes
     public function teachers()
     {
-        return $this->hasManyThrough(
-            Teacher::class,
-            ClassModel::class,
-            'lesson_id',   // classes.lesson_id -> lessons.id
-            'id',          // teachers.id
-            'id',          // lessons.id
-            'teacher_id'   // classes.teacher_id -> teachers.id
-        )->distinct();
+        // We can't express "many-to-many THROUGH pivot" natively,
+        // so we’ll usually load teachers using classes.teachers (see controller below).
+        return $this->belongsToMany(Teacher::class, 'class_teacher', 'class_id', 'teacher_id')
+                    ->using(\Illuminate\Database\Eloquent\Relations\Pivot::class)
+                    ->withTimestamps()
+                    ->whereRaw('1 = 0'); // placeholder to discourage misuse
     }
 
+        
 }

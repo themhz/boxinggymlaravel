@@ -69,6 +69,18 @@ Route::get('/email/verify/{id}/{hash}', fn(EmailVerificationRequest $request) =>
     ->name('verification.verify');
 
 
+// Public (read-only)
+Route::apiResource('students', StudentController::class)
+    ->only(['index','show']);
+
+// Admin (write)
+Route::middleware(['auth:sanctum','can:manage-students'])->group(function () {
+    Route::apiResource('students', StudentController::class)
+        ->only(['store','update','destroy']);
+});
+
+
+
 //Class Schedule Routes
 Route::get('classes-schedule', [ClassController::class, 'schedule']);
 Route::post('classes-schedule', [ClassController::class, 'store']);
@@ -85,11 +97,17 @@ Route::delete('classes/{classId}/students/{studentId}', [ClassController::class,
 
 
 
-Route::get('classes/{id}', fn($id) => ClassModel::with(['teacher', 'students', 'lesson'])->findOrFail($id));
-Route::post('classes', [ClassController::class, 'store']);
-Route::put('classes/{id}', [ClassController::class, 'update']);
-Route::patch('classes/{id}', [ClassController::class, 'update']);
-Route::delete('classes/{id}', [ClassController::class, 'destroy']);
+
+// Public (read-only)
+Route::apiResource('classes', ClassController::class)
+    ->only(['index','show']);
+
+// Admin (write)
+Route::middleware(['auth:sanctum','can:manage-classes'])->group(function () {
+    Route::apiResource('classes', ClassController::class)
+        ->only(['store','update','destroy']);
+});
+
 
 // Class Sessions & Exceptions
 Route::get('classes-sessions', [ClassSessionController::class, 'apiClassesWithSessions']);
@@ -103,14 +121,21 @@ Route::delete('classes-sessions/{id}', [ClassSessionController::class, 'apiDestr
 Route::apiResource('classes-exceptions', ClassExceptionController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
 
 
-// Related resources
-Route::post('lessons', [LessonController::class, 'store']);
-Route::put('lessons/{id}', [LessonController::class, 'update']);
-Route::apiResource('lessons', LessonController::class)->only(['index', 'show']);
-Route::get('lessons-teachers', [LessonController::class, 'withTeachers']);
+// Public (read-only)
+Route::apiResource('lessons', LessonController::class)
+    ->only(['index','show']);
+
+// Admin (write)
+Route::middleware(['auth:sanctum','can:manage-lessons'])->group(function () {
+    Route::apiResource('lessons', LessonController::class)
+        ->only(['store','update','destroy']);
+});
+
+// Extra public read endpoint
+//Route::get('lessons-teachers', [LessonController::class, 'withTeachers']);
+//Route::apiResource('students', StudentController::class);
 
 
-Route::apiResource('students', StudentController::class);
 Route::apiResource('students.attendance', StudentAttendanceController::class)->only(['index', 'store', 'update', 'destroy', 'show']);
 
 Route::apiResource('students.payments', StudentPaymentController::class)

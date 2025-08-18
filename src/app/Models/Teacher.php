@@ -25,29 +25,24 @@ class Teacher extends Model
     ];   
     
 
-   public function classes()
-    {
-        return $this->belongsToMany(ClassModel::class, 'class_teacher','teacher_id', 'class_id')
-                    ->withPivot(['role','is_primary'])
-                    ->withTimestamps();
-    }
-
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // Lessons taught by this teacher, inferred via classes
+    public function classes()
+    {
+        return $this->belongsToMany(ClassModel::class, 'class_teacher', 'teacher_id', 'class_id')
+                    ->withTimestamps();
+    }
+
+    // Optional convenience: derive lessons via classes (read-only)
     public function lessons()
     {
-        return $this->hasManyThrough(
-            Lesson::class,       // final model
-            ClassModel::class,   // through
-            'teacher_id',        // FK on classes -> teachers.id
-            'id',                // FK on lessons (target key)
-            'id',                // local key on teachers
-            'lesson_id'          // local key on classes -> lessons.id
-        )->distinct();
+        // uses the classes pivot; read-only, don’t attach/sync via this
+        return $this->belongsToMany(Lesson::class, 'classes', 'id', 'lesson_id')
+                    ->distinct();
+        // ^ This is just a shortcut query; prefer joining via classes when you need details.
     }
 
 
