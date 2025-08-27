@@ -18,23 +18,30 @@ class StudentExerciseController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
-        return response()->json($items);
+        return response()->json([
+            'result' => 'success',
+            'data'   => $items,
+        ]);
     }
 
-    // GET /students/{student}/exercises/{exercise}
-    public function show(Student $student, StudentExercise $exercise): JsonResponse
+    // GET /students/{student}/exercises/{student_exercise}
+    public function show(Student $student, StudentExercise $student_exercise): JsonResponse
     {
-        if ($exercise->student_id !== $student->id) {
-            return response()->json(['message' => 'Not found'], 404);
+        if ($student_exercise->student_id !== $student->id) {
+            return response()->json(['result' => 'error', 'message' => 'Not found'], 404);
         }
 
-        return response()->json($exercise->load('exercise'));
+        return response()->json([
+            'result' => 'success',
+            'data'   => $student_exercise->load('exercise'),
+        ]);
     }
 
     // POST /students/{student}/exercises
     public function store(Request $request, Student $student): JsonResponse
     {
-        $request->headers->set('Accept', 'application/json'); // double-force JSON
+        $request->headers->set('Accept', 'application/json'); // force JSON responses
+
         $data = $request->validate([
             'exercise_id'       => [
                 'required', 'exists:exercises,id',
@@ -44,7 +51,7 @@ class StudentExerciseController extends Controller
             'sets'              => 'nullable|integer|min:1|max:100',
             'repetitions'       => 'nullable|integer|min:1|max:1000',
             'weight'            => 'nullable|numeric|min:0|max:999.99',
-            'duration_seconds'  => 'nullable|integer|min:1|max:86400',            
+            'duration_seconds'  => 'nullable|integer|min:1|max:86400',
             'note'              => 'nullable|string',
         ]);
 
@@ -54,23 +61,24 @@ class StudentExerciseController extends Controller
             'sets'             => $data['sets'] ?? null,
             'repetitions'      => $data['repetitions'] ?? null,
             'weight'           => $data['weight'] ?? null,
-            'duration_seconds' => $data['duration_seconds'] ?? null,            
+            'duration_seconds' => $data['duration_seconds'] ?? null,
             'note'             => $data['note'] ?? null,
         ]);
 
         return response()->json([
+            'result'  => 'success',
             'message' => 'Exercise assigned successfully.',
             'data'    => $record->load('exercise'),
         ], 201);
     }
 
-
-    // PUT/PATCH /students/{student}/exercises/{exercise}
-    public function update(Request $request, Student $student, StudentExercise $exercise): JsonResponse
+    // PUT/PATCH /students/{student}/exercises/{student_exercise}
+    public function update(Request $request, Student $student, StudentExercise $student_exercise): JsonResponse
     {
-        $request->headers->set('Accept', 'application/json'); // double-force JSON
-        if ($exercise->student_id !== $student->id) {
-            return response()->json(['message' => 'Not found'], 404);
+        $request->headers->set('Accept', 'application/json'); // force JSON responses
+
+        if ($student_exercise->student_id !== $student->id) {
+            return response()->json(['result' => 'error', 'message' => 'Not found'], 404);
         }
 
         $data = $request->validate([
@@ -78,34 +86,38 @@ class StudentExerciseController extends Controller
                 'sometimes', 'required', 'exists:exercises,id',
                 Rule::unique('student_exercises')
                     ->where(fn($q) => $q->where('student_id', $student->id))
-                    ->ignore($exercise->id),
+                    ->ignore($student_exercise->id),
             ],
             'sets'              => 'nullable|integer|min:1|max:100',
             'repetitions'       => 'nullable|integer|min:1|max:1000',
             'weight'            => 'nullable|numeric|min:0|max:999.99',
-            'duration_seconds'  => 'nullable|integer|min:1|max:86400',            
+            'duration_seconds'  => 'nullable|integer|min:1|max:86400',
             'note'              => 'nullable|string',
         ]);
 
-        $exercise->fill($data)->save();
+        $student_exercise->fill($data)->save();
 
         return response()->json([
+            'result'  => 'success',
             'message' => 'Exercise updated successfully.',
-            'data'    => $exercise->fresh()->load('exercise'),
+            'data'    => $student_exercise->fresh()->load('exercise'),
         ]);
     }
 
-
-    // DELETE /students/{student}/exercises/{exercise}
-    public function destroy(Request $request,Student $student, StudentExercise $student_exercise): JsonResponse
+    // DELETE /students/{student}/exercises/{student_exercise}
+    public function destroy(Request $request, Student $student, StudentExercise $student_exercise): JsonResponse
     {
-        $request->headers->set('Accept', 'application/json'); // double-force JSON
+        $request->headers->set('Accept', 'application/json'); // force JSON responses
+
         if ($student_exercise->student_id !== $student->id) {
-            return response()->json(['message' => 'Not found'], 404);
+            return response()->json(['result' => 'error', 'message' => 'Not found'], 404);
         }
 
         $student_exercise->delete();
 
-        return response()->json(['message' => 'Exercise deleted successfully.']);
+        return response()->json([
+            'result'  => 'success',
+            'message' => 'Exercise deleted successfully.',
+        ]);
     }
 }

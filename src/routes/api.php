@@ -149,6 +149,20 @@ Route::middleware(['auth:sanctum'])->group(function () {
 });
 
 
+//STUDENT EXERCISES
+// Public
+Route::apiResource('students.exercises', StudentExerciseController::class)
+    ->parameters(['exercises' => 'student_exercise'])   // see note
+    ->only(['index','show']);
+
+// Admin
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::apiResource('students.exercises', StudentExerciseController::class)
+        ->parameters(['exercises' => 'student_exercise'])  // see note
+        ->only(['store','update','destroy']);
+});
+
+
 
 // we continue with student-exercises
 

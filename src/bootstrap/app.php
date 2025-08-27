@@ -32,26 +32,48 @@ return Application::configure(basePath: dirname(__DIR__))
                 // 1) Validation / Not found / Auth cases (keep your existing handlers)
                 if ($e instanceof ValidationException) {
                     return response()->json([
+                        'result' => 'error',
                         'message' => 'Validation failed',
                         'errors'  => $e->errors(),
                     ], 422);
                 }
 
                 if ($e instanceof ModelNotFoundException) {
-                    return response()->json(['message' => 'Not found'], 404);
+                    $model = class_basename($e->getModel());
+                    $ids   = $e->getIds(); // array|null
+
+                    // Friendlier messages per model
+                    $message = match ($model) {
+                        'result' => 'error',
+                        'StudentExercise' => 'Student exercise not found',
+                        'Student'         => 'Student not found',
+                        default           => "$model not found",
+                    };
+
+                    // In dev, include a hint
+                    if (app()->environment(['local','testing']) || config('app.debug')) {
+                        return response()->json([
+                            'result' => 'error',
+                            'message' => $message,
+                            'model'   => $model,
+                            'id'      => $ids,
+                        ], 404);
+                    }
+
+                    return response()->json(['result' => 'error', 'message' => $message], 404);
                 }
 
                 if ($e instanceof AuthenticationException) {
-                    return response()->json(['message' => 'Unauthenticated'], 401);
+                    return response()->json(['result' => 'error','message' => 'Unauthenticated'], 401);
                 }
 
                 if ($e instanceof AuthorizationException) {
-                    return response()->json(['message' => 'Forbidden'], 403);
+                    return response()->json(['result' => 'error','message' => 'Forbidden'], 403);
                 }
 
                 if ($e instanceof HttpExceptionInterface) {
-                    return response()->json([
-                        'message' => $e->getStatusCode() === 404 ? 'Not found' : $e->getMessage(),
+                    return response()->json(['result' => 'error',
+                        'message' =>  $e->getMessage()
                     ], $e->getStatusCode());
                 }
 
@@ -72,6 +94,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
                     // In prod: generic
                     return response()->json([
+                        'result' => 'error',
                         'message' => 'Database error',
                     ], 500);
                 }
@@ -79,6 +102,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 // 3) Verbose fallback in local/testing; generic in prod
                 if (app()->environment(['local','testing']) || config('app.debug')) {
                     return response()->json([
+                        'result' => 'error',
                         'message'   => $e->getMessage(),
                         'exception' => class_basename($e),
                         'file'      => $e->getFile(),
@@ -90,6 +114,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
                 // Existing minimal fallback for prod
                 return response()->json([
+                    'result' => 'error',
                     'message'   => 'Server error',
                     'exception' => config('app.debug') ? class_basename($e) : null,
                 ], 500);
