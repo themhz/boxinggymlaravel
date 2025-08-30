@@ -3,22 +3,49 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use App\Models\PaymentMethod;
 
 class PaymentMethodController extends Controller
 {
-    public function index()
+    // GET /api/payment-methods
+    public function index(): JsonResponse
     {
-        return PaymentMethod::orderBy('id')->get();
+        request()->headers->set('Accept', 'application/json');
+
+        $methods = PaymentMethod::orderBy('id')->get();
+
+        return response()->json([
+            'result' => 'success',
+            'data'   => $methods,
+        ]);
     }
 
-    public function show($id)
+    // GET /api/payment-methods/{id}
+    public function show($id): JsonResponse
     {
-        return PaymentMethod::findOrFail($id);
+        request()->headers->set('Accept', 'application/json');
+
+        $method = PaymentMethod::find($id);
+
+        if (! $method) {
+            return response()->json([
+                'result'  => 'error',
+                'message' => 'Payment method not found',
+            ], 404);
+        }
+
+        return response()->json([
+            'result' => 'success',
+            'data'   => $method,
+        ]);
     }
 
-    public function store(Request $req)
+    // POST /api/payment-methods
+    public function store(Request $req): JsonResponse
     {
+        $req->headers->set('Accept', 'application/json');
+
         $data = $req->validate([
             'name'        => 'required|string|max:100|unique:payment_methods,name',
             'description' => 'nullable|string|max:255',
@@ -26,27 +53,62 @@ class PaymentMethodController extends Controller
         ]);
 
         $method = PaymentMethod::create($data);
-        return response()->json($method, 201);
+
+        return response()->json([
+            'result'  => 'success',
+            'message' => 'Payment method created',
+            'data'    => $method,
+        ], 201);
     }
 
-    public function update(Request $req, $id)
+    // PUT/PATCH /api/payment-methods/{id}
+    public function update(Request $req, $id): JsonResponse
     {
-        $method = PaymentMethod::findOrFail($id);
+        $req->headers->set('Accept', 'application/json');
+
+        $method = PaymentMethod::find($id);
+
+        if (! $method) {
+            return response()->json([
+                'result'  => 'error',
+                'message' => 'Payment method not found',
+            ], 404);
+        }
 
         $data = $req->validate([
             'name'        => 'sometimes|string|max:100|unique:payment_methods,name,' . $method->id,
-            'description' => 'nullable|string|max:255',
-            'active'      => 'boolean',
+            'description' => 'sometimes|nullable|string|max:255',
+            'active'      => 'sometimes|boolean',
         ]);
 
         $method->update($data);
-        return response()->json($method);
+
+        return response()->json([
+            'result'  => 'success',
+            'message' => 'Payment method updated',
+            'data'    => $method->fresh(),
+        ]);
     }
 
-    public function destroy($id)
+    // DELETE /api/payment-methods/{id}
+    public function destroy($id): JsonResponse
     {
-        PaymentMethod::findOrFail($id)->delete();
-        return response()->json(['message' => 'Payment method deleted'], 200);
+        request()->headers->set('Accept', 'application/json');
+
+        $method = PaymentMethod::find($id);
+
+        if (! $method) {
+            return response()->json([
+                'result'  => 'error',
+                'message' => 'Payment method not found',
+            ], 404);
+        }
+
+        $method->delete();
+
+        return response()->json([
+            'result'  => 'success',
+            'message' => 'Payment method deleted',
+        ]);
     }
 }
-

@@ -1,67 +1,125 @@
 <?php
+// app/Http/Controllers/ClassSessionController.php
 
 namespace App\Http\Controllers;
 
 use App\Models\ClassModel;
 use App\Models\ClassSession;
 use Illuminate\Http\Request;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\JsonResponse;
 
 class ClassSessionController extends Controller
 {
-    use AuthorizesRequests;
-
-    public function index(ClassModel $class)
+    // GET /api/classes/{class}/sessions
+    public function index(ClassModel $class): JsonResponse
     {
-        return $class->sessions()->with('exercises')->get();
+        $items = ClassSession::where('class_id', $class->id)
+            ->orderBy('date')
+            ->orderBy('start_time')
+            ->get();
+
+        return response()->json([
+            'result' => 'success',
+            'data'   => $items,
+        ]);
     }
 
-    public function show(ClassModel $class, $id)
+    // GET /api/classes/{class}/sessions/{session}
+    public function show(ClassModel $class, ClassSession $session): JsonResponse
     {
-        return $class->sessions()->with('exercises')->findOrFail($id);
+        if ($session->class_id !== $class->id) {
+            return response()->json([
+                'result'  => 'error',
+                'message' => 'Session not found for this class',
+            ], 404);
+        }
+
+        return response()->json([
+            'result' => 'success',
+            'data'   => $session,
+        ]);
     }
 
-    public function store(Request $request, $classId)
+    // POST /api/classes/{class}/sessions
+    public function store(Request $request, ClassModel $class): JsonResponse
     {
+        $request->headers->set('Accept', 'application/json');
+
+        // Adjust rules to match your schema (add/remove fields as needed)
         $data = $request->validate([
-            'date'       => 'required|date',
-            'start_time' => 'required|date_format:H:i:s',
-            'end_time'   => 'required|date_format:H:i:s|after:start_time',
-            'notes'      => 'nullable|string|max:255',
+            'date'        => 'required|date',
+            'start_time'  => 'required|date_format:H:i',
+            'end_time'    => 'required|date_format:H:i|after:start_time',
+            'status'      => 'nullable|string|max:50',
+            'location'    => 'nullable|string|max:100',
+            'notes'        => 'nullable|string',
         ]);
 
         $session = ClassSession::create([
-            'class_id'   => $classId,
-            ...$data
+            'class_id'    => $class->id,
+            'date'        => $data['date'],
+            'start_time'  => $data['start_time'],
+            'end_time'    => $data['end_time'],
+            'status'      => $data['status'] ?? null,
+            'location'    => $data['location'] ?? null,
+            'notes'        => $data['note'] ?? null,
         ]);
 
-        return response()->json($session, 201);
+        return response()->json([
+            'result'  => 'success',
+            'message' => 'Session created',
+            'data'    => $session,
+        ], 201);
     }
 
-
-    public function update(Request $request, ClassModel $class, $id)
+    // PUT/PATCH /api/classes/{class}/sessions/{session}
+    public function update(Request $request, ClassModel $class, ClassSession $session): JsonResponse
     {
-        $this->authorize('manage-class-sessions');
+        $request->headers->set('Accept', 'application/json');
 
-        $session = $class->sessions()->findOrFail($id);
+        if ($session->class_id !== $class->id) {
+            return response()->json([
+                'result'  => 'error',
+                'message' => 'Session not found for this class',
+            ], 404);
+        }
 
+        // Make all fields sometimes/nullable as appropriate
         $data = $request->validate([
-            'session_date' => 'sometimes|date',
-            'notes'        => 'nullable|string|max:500',
+            'date'        => 'sometimes|required|date',
+            'start_time'  => 'sometimes|required|date_format:H:i',
+            'end_time'    => 'sometimes|required|date_format:H:i|after:start_time',
+            'status'      => 'sometimes|nullable|string|max:50',
+            'location'    => 'sometimes|nullable|string|max:100',
+            'notes'        => 'sometimes|nullable|string',
         ]);
 
-        $session->update($data);
+        $session->fill($data)->save();
 
-        return response()->json($session);
+        return response()->json([
+            'result'  => 'success',
+            'message' => 'Session updated',
+            'data'    => $session->fresh(),
+        ]);
     }
 
-    public function destroy(ClassModel $class, $id)
+    // DELETE /api/classes/{class}/sessions/{session}
+    public function destroy(Request $request, ClassModel $class, ClassSession $session): JsonResponse
     {
-        $this->authorize('manage-class-sessions');
+        $request->headers->set('Accept', 'application/json');
 
-        $session = $class->sessions()->findOrFail($id);
+        if ($session->class_id !== $class->id) {
+            return response()->json([
+                'result'  => 'error',
+                'message' => 'Session not found for this class',
+            ], 404);
+        }
+
         $session->delete();
 
-        return response()->json(null, 204);
+        return response()->json([
+            'result'  => 'success',
+            'message' => 'Session deleted',
+        ]);
     }
 }

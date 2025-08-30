@@ -2,105 +2,128 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ClassModel;
 use App\Models\ClassException;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+
 class ClassExceptionController extends Controller
 {
-    public function index(): JsonResponse
+    // GET /api/classes/{class}/exceptions
+    public function index(ClassModel $class): JsonResponse
     {
+        request()->headers->set('Accept', 'application/json');
+
         $exceptions = ClassException::with('class.lesson')
-            ->orderBy('exception_date', 'desc')
+            ->where('class_id', $class->id)
+            ->orderByDesc('exception_date')
             ->get();
 
-        return response()->json($exceptions);
+        return response()->json([
+            'result' => 'success',
+            'data'   => $exceptions,
+        ]);
     }
 
-    public function show($id): JsonResponse
+    // GET /api/classes/{class}/exceptions/{exception}
+    public function show(ClassModel $class, ClassException $exception): JsonResponse
     {
-        $exception = ClassException::with('class.lesson')->find($id);
+        request()->headers->set('Accept', 'application/json');
 
-        if (!$exception) {
-            return response()->json(['message' => 'Exception not found.'], 404);
+        if ($exception->class_id !== $class->id) {
+            return response()->json([
+                'result'  => 'error',
+                'message' => 'Exception not found for this class.',
+            ], 404);
         }
 
-        return response()->json($exception);
+        return response()->json([
+            'result' => 'success',
+            'data'   => $exception->load('class.lesson'),
+        ]);
     }
 
-    public function create()
+    // POST /api/classes/{class}/exceptions
+    public function store(Request $request, ClassModel $class): JsonResponse
     {
-        $classes = \App\Models\ClassModel::all();
-        return view('exceptions.create', compact('classes'));
-    }
+        $request->headers->set('Accept', 'application/json');
 
-    public function store(Request $request): JsonResponse
-    {
         $data = $request->validate([
-            'class_id' => 'required|exists:classes,id',
-            'exception_date' => 'required|date',
-            'is_cancelled' => 'sometimes|boolean',
+            // class_id comes from the URL; do NOT accept it from body
+            'exception_date'      => 'required|date',
+            'is_cancelled'        => 'sometimes|boolean',
             'override_start_time' => 'nullable|date_format:H:i',
-            'override_end_time' => 'nullable|date_format:H:i',
-            'reason' => 'nullable|string|max:255',
+            'override_end_time'   => 'nullable|date_format:H:i|after:override_start_time',
+            'reason'              => 'nullable|string|max:255',
         ]);
 
-        $data['is_cancelled'] = $data['is_cancelled'] ?? false;
-
-
-        $exception = ClassException::create($data);
+        $exception = ClassException::create([
+            'class_id'            => $class->id,
+            'exception_date'      => $data['exception_date'],
+            'is_cancelled'        => (bool)($data['is_cancelled'] ?? false),
+            'override_start_time' => $data['override_start_time'] ?? null,
+            'override_end_time'   => $data['override_end_time'] ?? null,
+            'reason'              => $data['reason'] ?? null,
+        ]);
 
         return response()->json([
+            'result'  => 'success',
             'message' => 'Class exception created.',
-            'exception' => $exception,
+            'data'    => $exception->load('class.lesson'),
         ], 201);
     }
 
-    public function edit(ClassException $exception)
+    // PUT/PATCH /api/classes/{class}/exceptions/{exception}
+    public function update(Request $request, ClassModel $class, ClassException $exception): JsonResponse
     {
-        $classes = \App\Models\ClassModel::all();
-        return view('exceptions.edit', compact('exception','classes'));
-    }
+        $request->headers->set('Accept', 'application/json');
 
-    public function update(Request $request, ClassException $classes_exception)
-    {
+        if ($exception->class_id !== $class->id) {
+            return response()->json([
+                'result'  => 'error',
+                'message' => 'Exception not found for this class.',
+            ], 404);
+        }
+
         $data = $request->validate([
-            'class_id'            => 'sometimes|required|exists:classes,id',
+            // class_id stays tied to route param; do not allow changing it
             'exception_date'      => 'sometimes|required|date',
-            'is_cancelled'        => 'sometimes|required|boolean',
-            'override_start_time' => 'sometimes|required|date_format:H:i:s',
-            'override_end_time'   => 'sometimes|required|date_format:H:i:s',
-            'reason'              => 'nullable|string|max:255', // ⬅️ add this
-
+            'is_cancelled'        => 'sometimes|boolean',
+            'override_start_time' => 'sometimes|nullable|date_format:H:i',
+            'override_end_time'   => 'sometimes|nullable|date_format:H:i|after:override_start_time',
+            'reason'              => 'sometimes|nullable|string|max:255',
         ]);
 
-        // Force-set the field to make sure it's picked up
-        $classes_exception->fill($data);
-        $classes_exception->is_cancelled = (bool) $data['is_cancelled'];
-
-        $classes_exception->save(); // this saves the EXISTING record — not create a new one
+        $exception->fill($data);
+        if (array_key_exists('is_cancelled', $data)) {
+            $exception->is_cancelled = (bool)$data['is_cancelled'];
+        }
+        $exception->save();
 
         return response()->json([
+            'result'  => 'success',
             'message' => 'Class exception updated.',
-            'data' => $classes_exception->fresh(),
+            'data'    => $exception->fresh()->load('class.lesson'),
         ]);
     }
 
-
-
-
-    // Delete exception
-    public function destroy($id): JsonResponse
+    // DELETE /api/classes/{class}/exceptions/{exception}
+    public function destroy(Request $request, ClassModel $class, ClassException $exception): JsonResponse
     {
-        $exception = ClassException::find($id);
+        $request->headers->set('Accept', 'application/json');
 
-        if (!$exception) {
-            return response()->json(['message' => 'Exception not found.'], 404);
+        if ($exception->class_id !== $class->id) {
+            return response()->json([
+                'result'  => 'error',
+                'message' => 'Exception not found for this class.',
+            ], 404);
         }
 
         $exception->delete();
 
-        return response()->json(['message' => 'Exception deleted.']);
+        return response()->json([
+            'result'  => 'success',
+            'message' => 'Exception deleted.',
+        ]);
     }
-
-    
 }

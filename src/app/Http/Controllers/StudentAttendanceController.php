@@ -12,6 +12,8 @@ class StudentAttendanceController extends Controller
     // GET /api/students/{student}/attendance?class_id=&status=&from=&to=&per_page=
     public function index(Request $request, Student $student)
     {
+        $request->headers->set('Accept', 'application/json');
+
         $query = Attendance::with(['session.class.lesson'])
             ->where('student_id', $student->id);
 
@@ -39,28 +41,44 @@ class StudentAttendanceController extends Controller
         $query->orderByDesc('created_at');
 
         if ($request->integer('per_page', 0) > 0) {
-            return response()->json($query->paginate($request->integer('per_page', 20)));
+            $paginator = $query->paginate($request->integer('per_page', 20));
+            return response()->json([
+                'result' => 'success',
+                'data'   => $paginator, // includes items + meta
+            ]);
         }
 
-        return response()->json($query->get());
+        return response()->json([
+            'result' => 'success',
+            'data'   => $query->get(),
+        ]);
     }
 
     // GET /api/students/{student}/attendance/{attendance}
     public function show(Student $student, Attendance $attendance)
     {
+        $request = request();
+        $request->headers->set('Accept', 'application/json');
+
         // ensure the record belongs to that student
         if ($attendance->student_id !== $student->id) {
-            return response()->json(['message' => 'Not found'], 404);
+            return response()->json([
+                'result'  => 'error',
+                'message' => 'Not found',
+            ], 404);
         }
 
-        return response()->json(
-            $attendance->load(['session.class.lesson'])
-        );
+        return response()->json([
+            'result' => 'success',
+            'data'   => $attendance->load(['session.class.lesson']),
+        ]);
     }
 
     // POST /api/students/{student}/attendance
     public function store(Request $request, Student $student)
     {
+        $request->headers->set('Accept', 'application/json');
+
         $validated = $request->validate([
             'session_id' => ['required','exists:class_sessions,id',
                 // prevent duplicates: a student can have only one record per session
@@ -81,17 +99,22 @@ class StudentAttendanceController extends Controller
         ]);
 
         return response()->json([
-            'message'    => 'Attendance created',
-            'attendance' => $attendance->load(['session.class.lesson']),
+            'result'   => 'success',
+            'message'  => 'Attendance created',
+            'data'     => $attendance->load(['session.class.lesson']),
         ], 201);
     }
 
-    // PATCH /api/students/{student}/attendance/{attendance}
+    // PUT/PATCH /api/students/{student}/attendance/{attendance}
     public function update(Request $request, Student $student, Attendance $attendance)
     {
-        $request->headers->set('Accept', 'application/json'); // double-force JSON
+        $request->headers->set('Accept', 'application/json');
+
         if ($attendance->student_id !== $student->id) {
-            return response()->json(['message' => 'Not found'], 404);
+            return response()->json([
+                'result'  => 'error',
+                'message' => 'Not found',
+            ], 404);
         }
 
         $data = $request->validate([
@@ -103,27 +126,36 @@ class StudentAttendanceController extends Controller
                     ->ignore($attendance->id)
             ],
             'status' => 'required|string|max:50',
-            'note' => 'nullable|string',
+            'note'   => 'nullable|string',
         ]);
 
         $attendance->update($data);
 
         return response()->json([
-            'message' => 'Attendance updated successfully.',
-            'attendance' => $attendance->fresh()->load(['session.class.lesson']),
+            'result'   => 'success',
+            'message'  => 'Attendance updated successfully.',
+            'data'     => $attendance->fresh()->load(['session.class.lesson']),
         ]);
     }
-
 
     // DELETE /api/students/{student}/attendance/{attendance}
     public function destroy(Student $student, Attendance $attendance)
     {
+        $request = request();
+        $request->headers->set('Accept', 'application/json');
+
         if ($attendance->student_id !== $student->id) {
-            return response()->json(['message' => 'Not found'], 404);
+            return response()->json([
+                'result'  => 'error',
+                'message' => 'Not found',
+            ], 404);
         }
 
         $attendance->delete();
 
-        return response()->json(['message' => 'Attendance deleted']);
+        return response()->json([
+            'result'  => 'success',
+            'message' => 'Attendance deleted',
+        ]);
     }
 }

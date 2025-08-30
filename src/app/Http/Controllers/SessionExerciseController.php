@@ -1,4 +1,6 @@
 <?php
+// app/Http/Controllers/SessionExerciseController.php
+
 namespace App\Http\Controllers;
 
 use App\Models\SessionExercise;
@@ -8,35 +10,44 @@ use Illuminate\Http\JsonResponse;
 
 class SessionExerciseController extends Controller
 {
-    // GET /api/classes/{class}/sessions/{session}/exercises
-    public function index($classId, $sessionId): JsonResponse
+    // GET /api/sessions/{session}/exercises
+    public function index(ClassSession $session): JsonResponse
     {
-        $this->ensureSessionBelongsToClass($classId, $sessionId);
+        request()->headers->set('Accept', 'application/json');
 
         $rows = SessionExercise::with('exercise')
-            ->where('session_id', $sessionId)
+            ->where('session_id', $session->id)
             ->orderBy('display_order')
             ->get();
 
-        return response()->json($rows);
+        return response()->json([
+            'result' => 'success',
+            'data'   => $rows,
+        ]);
     }
 
-    // GET /api/classes/{class}/sessions/{session}/exercises/{id}
-    public function show($classId, $sessionId, $id): JsonResponse
+    // GET /api/sessions/{session}/exercises/{session_exercise}
+    public function show(ClassSession $session, SessionExercise $session_exercise): JsonResponse
     {
-        $this->ensureSessionBelongsToClass($classId, $sessionId);
+        request()->headers->set('Accept', 'application/json');
 
-        $row = SessionExercise::with('exercise')
-            ->where('session_id', $sessionId)
-            ->findOrFail($id);
+        if ($session_exercise->session_id !== $session->id) {
+            return response()->json([
+                'result'  => 'error',
+                'message' => 'Exercise not found for this session',
+            ], 404);
+        }
 
-        return response()->json($row);
+        return response()->json([
+            'result' => 'success',
+            'data'   => $session_exercise->load('exercise'),
+        ]);
     }
 
-    // POST /api/classes/{class}/sessions/{session}/exercises
-    public function store($classId, $sessionId, Request $request): JsonResponse
+    // POST /api/sessions/{session}/exercises
+    public function store(ClassSession $session, Request $request): JsonResponse
     {
-        $this->ensureSessionBelongsToClass($classId, $sessionId);
+        $request->headers->set('Accept', 'application/json');
 
         $data = $request->validate([
             'exercise_id'   => ['required','integer','exists:exercises,id'],
@@ -44,46 +55,64 @@ class SessionExerciseController extends Controller
             'note'          => ['nullable','string','max:2000'],
         ]);
 
-        $data['session_id'] = $sessionId;
-        $row = SessionExercise::create($data);
+        $row = SessionExercise::create([
+            'session_id'    => $session->id,
+            'exercise_id'   => $data['exercise_id'],
+            'display_order' => $data['display_order'] ?? null,
+            'note'          => $data['note'] ?? null,
+        ])->load('exercise');
 
-        return response()->json($row->load('exercise'), 201);
+        return response()->json([
+            'result'  => 'success',
+            'message' => 'Session exercise created',
+            'data'    => $row,
+        ], 201);
     }
 
-    // PATCH /api/classes/{class}/sessions/{session}/exercises/{id}
-    public function update($classId, $sessionId, $id, Request $request): JsonResponse
+    // PUT/PATCH /api/sessions/{session}/exercises/{session_exercise}
+    public function update(Request $request, ClassSession $session, SessionExercise $session_exercise): JsonResponse
     {
-        $this->ensureSessionBelongsToClass($classId, $sessionId);
+        $request->headers->set('Accept', 'application/json');
 
-        $row = SessionExercise::where('session_id', $sessionId)->findOrFail($id);
+        if ($session_exercise->session_id !== $session->id) {
+            return response()->json([
+                'result'  => 'error',
+                'message' => 'Exercise not found for this session',
+            ], 404);
+        }
 
         $data = $request->validate([
-            'exercise_id'   => ['nullable','integer','exists:exercises,id'],
-            'display_order' => ['nullable','integer','min:1','max:65535'],
-            'note'          => ['nullable','string','max:2000'],
+            'exercise_id'   => ['sometimes','integer','exists:exercises,id'],
+            'display_order' => ['sometimes','nullable','integer','min:1','max:65535'],
+            'note'          => ['sometimes','nullable','string','max:2000'],
         ]);
 
-        $row->update($data);
+        $session_exercise->update($data);
 
-        return response()->json($row->load('exercise'));
+        return response()->json([
+            'result'  => 'success',
+            'message' => 'Session exercise updated',
+            'data'    => $session_exercise->fresh()->load('exercise'),
+        ]);
     }
 
-    // DELETE /api/classes/{class}/sessions/{session}/exercises/{id}
-    public function destroy($classId, $sessionId, $id): JsonResponse
+    // DELETE /api/sessions/{session}/exercises/{session_exercise}
+    public function destroy(ClassSession $session, SessionExercise $session_exercise): JsonResponse
     {
-        $this->ensureSessionBelongsToClass($classId, $sessionId);
+        request()->headers->set('Accept', 'application/json');
 
-        $row = SessionExercise::where('session_id', $sessionId)->findOrFail($id);
-        $row->delete();
-
-        return response()->json(['deleted' => true]);
-    }
-
-    // --- helper
-    protected function ensureSessionBelongsToClass($classId, $sessionId): void
-    {
-        if (! ClassSession::where('id',$sessionId)->where('class_id',$classId)->exists()) {
-            abort(404, 'Session not found for this class');
+        if ($session_exercise->session_id !== $session->id) {
+            return response()->json([
+                'result'  => 'error',
+                'message' => 'Exercise not found for this session',
+            ], 404);
         }
+
+        $session_exercise->delete();
+
+        return response()->json([
+            'result'  => 'success',
+            'message' => 'Session exercise deleted',
+        ]);
     }
 }

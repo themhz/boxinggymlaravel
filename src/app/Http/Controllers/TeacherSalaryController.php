@@ -1,26 +1,36 @@
 <?php
 
-// app/Http/Controllers/TeacherSalaryController.php
 namespace App\Http\Controllers;
 
 use App\Models\TeacherSalary;
 use App\Models\Teacher;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Validation\Rule;
 
 class TeacherSalaryController extends Controller
 {
-    // GET /api/teacher-salaries
+    // GET /api/teachers/{teacher}/salaries
     public function index(Request $request, Teacher $teacher): JsonResponse
-    {        
-        return response()->json(
-            $teacher->salaries()->with('teacher:id,first_name,last_name')->get()
-        );
+    {
+        $request->headers->set('Accept', 'application/json');
+
+        $rows = $teacher->salaries()
+            ->with('teacher:id,first_name,last_name')
+            ->orderByDesc('year')
+            ->orderByDesc('month')
+            ->get();
+
+        return response()->json([
+            'result' => 'success',
+            'data'   => $rows,
+        ]);
     }
 
+    // POST /api/teachers/{teacher}/salaries
     public function store(Request $request, Teacher $teacher): JsonResponse
     {
+        $request->headers->set('Accept', 'application/json');
+
         $data = $request->validate([
             'year'     => ['required','integer','between:2000,2100'],
             'month'    => ['required','integer','between:1,12'],
@@ -33,45 +43,73 @@ class TeacherSalaryController extends Controller
         ]);
 
         $exists = $teacher->salaries()
-            ->where('year',$data['year'])
-            ->where('month',$data['month'])
+            ->where('year',  $data['year'])
+            ->where('month', $data['month'])
             ->exists();
 
         if ($exists) {
-            return response()->json(['message'=>'Salary already exists for this month'],409);
+            return response()->json([
+                'result'  => 'error',
+                'message' => 'Salary already exists for this month',
+            ], 409);
         }
 
-        $salary = $teacher->salaries()->create($data);
+        // auto-set paid_at if marking as paid and not provided
+        if (!empty($data['is_paid']) && empty($data['paid_at'])) {
+            $data['paid_at'] = now();
+        }
 
-        return response()->json($salary->load('teacher:id,first_name,last_name'),201);
+        $salary = $teacher->salaries()->create($data)->load('teacher:id,first_name,last_name');
+
+        return response()->json([
+            'result'  => 'success',
+            'message' => 'Teacher salary created',
+            'data'    => $salary,
+        ], 201);
     }
 
+    // GET /api/teachers/{teacher}/salaries/{salary}
     public function show(Teacher $teacher, TeacherSalary $salary): JsonResponse
     {
+        request()->headers->set('Accept', 'application/json');
+
         if ($salary->teacher_id !== $teacher->id) {
-            return response()->json(['message'=>'Not found'],404);
+            return response()->json([
+                'result'  => 'error',
+                'message' => 'Not found',
+            ], 404);
         }
-        return response()->json($salary->load('teacher:id,first_name,last_name'));
+
+        return response()->json([
+            'result' => 'success',
+            'data'   => $salary->load('teacher:id,first_name,last_name'),
+        ]);
     }
 
+    // PUT/PATCH /api/teachers/{teacher}/salaries/{salary}
     public function update(Request $request, Teacher $teacher, TeacherSalary $salary): JsonResponse
     {
+        $request->headers->set('Accept', 'application/json');
+
         if ($salary->teacher_id !== $teacher->id) {
-            return response()->json(['message'=>'Not found'],404);
+            return response()->json([
+                'result'  => 'error',
+                'message' => 'Not found',
+            ], 404);
         }
 
         $data = $request->validate([
             'year'     => ['sometimes','integer','between:2000,2100'],
             'month'    => ['sometimes','integer','between:1,12'],
             'amount'   => ['sometimes','numeric','min:0'],
-            'due_date' => ['nullable','date'],
+            'due_date' => ['sometimes','nullable','date'],
             'is_paid'  => ['sometimes','boolean'],
-            'paid_at'  => ['nullable','date'],
-            'method'   => ['nullable','string','max:30'],
-            'notes'    => ['nullable','string'],
+            'paid_at'  => ['sometimes','nullable','date'],
+            'method'   => ['sometimes','nullable','string','max:30'],
+            'notes'    => ['sometimes','nullable','string'],
         ]);
 
-        // Determine what year/month we’re about to save
+        // Determine prospective year/month
         $newYear  = $data['year']  ?? $salary->year;
         $newMonth = $data['month'] ?? $salary->month;
 
@@ -83,6 +121,7 @@ class TeacherSalaryController extends Controller
 
         if ($exists) {
             return response()->json([
+                'result'  => 'error',
                 'message' => 'Another salary already exists for this teacher in that month/year.',
             ], 409);
         }
@@ -94,20 +133,30 @@ class TeacherSalaryController extends Controller
 
         $salary->update($data);
 
-        return response()->json($salary->fresh()->load('teacher:id,first_name,last_name'));
+        return response()->json([
+            'result'  => 'success',
+            'message' => 'Teacher salary updated',
+            'data'    => $salary->fresh()->load('teacher:id,first_name,last_name'),
+        ]);
     }
 
-
+    // DELETE /api/teachers/{teacher}/salaries/{salary}
     public function destroy(Request $request, Teacher $teacher, TeacherSalary $salary): JsonResponse
-    {        
-        $request->headers->set('Accept', 'application/json'); // double-force JSON
+    {
+        $request->headers->set('Accept', 'application/json');
+
         if ($salary->teacher_id !== $teacher->id) {
-            return response()->json(['message'=>'Not found'],404);
+            return response()->json([
+                'result'  => 'error',
+                'message' => 'Not found',
+            ], 404);
         }
 
         $salary->delete();
 
-        return response()->json(['message'=>'Teacher salary deleted']);
+        return response()->json([
+            'result'  => 'success',
+            'message' => 'Teacher salary deleted',
+        ]);
     }
-
 }

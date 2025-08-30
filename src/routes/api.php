@@ -32,6 +32,7 @@ use App\Http\Controllers\StudentExerciseController;
 use App\Http\Controllers\TeacherClassController;
 use App\Http\Controllers\SessionExerciseController;
 use App\Http\Controllers\SessionExerciseStudentController;
+use App\Http\Controllers\ClassStudentController;
 
 use App\Models\ClassModel;
 
@@ -163,8 +164,20 @@ Route::middleware(['auth:sanctum'])->group(function () {
 });
 
 
+// STUDENT CLASSES
+// Public
+Route::apiResource('students.classes', StudentClassController::class)
+    ->parameters(['classes' => 'class'])
+    ->only(['index' , 'show']);
 
-// we continue with student-exercises
+// Admin
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::apiResource('students.classes', StudentClassController::class)
+        ->parameters(['classes' => 'class'])
+        ->only(['store','update','destroy']);
+});
+
+
 
 
 
@@ -176,30 +189,61 @@ Route::patch('classes-schedule/{id}', [ClassController::class, 'update']);
 Route::delete('classes-schedule/{id}', [ClassController::class, 'destroy']);
 
 //Classes API Routes
-Route::get('classes/{id}/students', [ClassController::class, 'students']);
-Route::post('classes/{id}/students', [ClassController::class, 'addStudent']);
-Route::put('classes/{classId}/students/{studentId}', [ClassController::class, 'updateStudent']);
-Route::patch('classes/{classId}/students/{studentId}', [ClassController::class, 'patchStudent']);
-Route::delete('classes/{classId}/students/{studentId}', [ClassController::class, 'removeStudent']);
+// Route::get('classes/{id}/students', [ClassController::class, 'students']);
+// Route::post('classes/{id}/students', [ClassController::class, 'addStudent']);
+// Route::put('classes/{classId}/students/{studentId}', [ClassController::class, 'updateStudent']);
+// Route::patch('classes/{classId}/students/{studentId}', [ClassController::class, 'patchStudent']);
+// Route::delete('classes/{classId}/students/{studentId}', [ClassController::class, 'removeStudent']);
+
+// STUDENT → CLASSES (uses StudentClassController)
+Route::apiResource('students.classes', StudentClassController::class)
+    ->parameters(['classes' => 'class'])
+    ->only(['index','show']);
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::apiResource('students.classes', StudentClassController::class)
+        ->parameters(['classes' => 'class'])
+        ->only(['store','update','destroy']);
+});
+
+// CLASS → STUDENTS (uses ClassStudentController)
+Route::apiResource('classes.students', ClassStudentController::class)
+    ->parameters(['classes' => 'class'])
+    ->only(['index','show']);
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::apiResource('classes.students', ClassStudentController::class)
+        ->parameters(['classes' => 'class'])
+        ->only(['store','update','destroy']);
+});
+
+
+// NESTED: /api/classes/{class}/sessions/{session}
+Route::apiResource('classes.sessions', ClassSessionController::class)
+    ->parameters(['classes' => 'class', 'sessions' => 'session'])
+    ->only(['index','show']);
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::apiResource('classes.sessions', ClassSessionController::class)
+        ->parameters(['classes' => 'class', 'sessions' => 'session'])
+        ->only(['store','update','destroy']);
+});
 
 
 
-// Class Sessions & Exceptions
-Route::get('classes-sessions', [ClassSessionController::class, 'apiClassesWithSessions']);
-Route::get('classes-sessions/{id}', [ClassSessionController::class, 'apiClassSessionsById']);
-Route::post('classes-sessions', [ClassSessionController::class, 'apiStore']);
-Route::put('classes-sessions/{id}', [ClassSessionController::class, 'apiUpdate']);
-Route::patch('classes-sessions/{id}', [ClassSessionController::class, 'apiUpdate']);
-Route::delete('classes-sessions/{id}', [ClassSessionController::class, 'apiDestroy']);
+// NESTED: /api/classes/{class}/exceptions/{exception}
+Route::apiResource('classes.exceptions', ClassExceptionController::class)
+    ->parameters(['classes' => 'class', 'exceptions' => 'exception'])
+    ->only(['index','show']);
 
-//Route::put('classes-exceptions/{class_exception}', [ClassExceptionController::class, 'update']);
-Route::apiResource('classes-exceptions', ClassExceptionController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::apiResource('classes.exceptions', ClassExceptionController::class)
+        ->parameters(['classes' => 'class', 'exceptions' => 'exception'])
+        ->only(['store','update','destroy']);
+});
 
 
 
-// Extra public read endpoint
-//Route::get('lessons-teachers', [LessonController::class, 'withTeachers']);
-//Route::apiResource('students', StudentController::class);
 
 
 Route::apiResource('students.attendance', StudentAttendanceController::class)->only(['index', 'store', 'update', 'destroy', 'show']);
@@ -266,13 +310,14 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // Everyone can read session exercises
-Route::apiResource('classes.sessions.exercises', SessionExerciseController::class)
-    ->only(['index', 'show']);
+Route::apiResource('sessions.exercises', SessionExerciseController::class)
+    ->parameters(['sessions' => 'session', 'exercises' => 'session_exercise'])
+    ->only(['index','show']);
 
-// Only admins can write session exercises
-Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('classes.sessions.exercises', SessionExerciseController::class)
-        ->only(['store', 'update', 'destroy']);
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::apiResource('sessions.exercises', SessionExerciseController::class)
+        ->parameters(['sessions' => 'session', 'exercises' => 'session_exercise'])
+        ->only(['store','update','destroy']);
 });
 
 
