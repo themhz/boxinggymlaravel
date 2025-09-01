@@ -1,119 +1,67 @@
 <?php
 
 namespace App\Http\Controllers;
-
-use App\Models\Appointment;
 use Illuminate\Http\Request;
-use App\Models\ClassModel;
-use App\Models\AppointmentAvailability;
+use App\Models\Appointment;
 
 
 class AppointmentController extends Controller
 {
+    /**
+     * Display a listing of the appointments (admin only).
+     */
     public function index()
     {
-        return response()->json(
-            Appointment::with(['student'])->get()
-        );
+        return Appointment::all();
     }
 
-    public function show($id)
-    {
-        $appointment = Appointment::with(['student'])->findOrFail($id);
-        return response()->json($appointment);
-    }
-
-
-
+    /**
+     * Store a newly created appointment in storage.
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'student_id' => 'required|exists:students,id',
-            'class_id' => 'required|exists:clases,id',
-            'availability_id' => 'required|exists:appointment_availability,id',
-            'status' => 'nullable|in:booked,cancelled,attended',
-            'notes' => 'nullable|string',
+            'name'         => 'required|string|max:255',
+            'email'        => 'nullable|email|max:255',
+            'phone'        => 'nullable|string|max:30',
+            'scheduled_at' => 'required|date',
+            'notes'        => 'nullable|string',
         ]);
 
-        $studentId = $validated['student_id'];
-        $classId = $validated['class_id'];
-        $availabilityId = $validated['availability_id'];
-
-        $class = ClassModel::with('appointments')->findOrFail($classId);
-
-
-        // ✅ Get the availability slot directly
-        $availability = AppointmentAvailability::findOrFail($availabilityId);
-        if (! $availability->is_available) {
-            return response()->json(['message' => 'Selected time slot is not available.'], 409);
-        }
-
-        // 🧠 Prevent double booking by same student for same class
-        $alreadyBooked = $class->appointments()
-            ->where('student_id', $studentId)
-            ->where('status', 'booked')
-            ->exists();
-
-        if ($alreadyBooked) {
-            return response()->json(['message' => 'You have already booked this class.'], 409);
-        }
-
-        // 📆 Check class capacity
-        $bookedCount = $class->appointments()->where('status', 'booked')->count();
-        if ($bookedCount >= $class->capacity) {
-            return response()->json(['message' => 'Class is full.'], 409);
-        }
-
-        // ⏰ Overlap check
-        $conflict = Appointment::where('student_id', $studentId)
-            ->whereHas('class', function ($q) use ($class) {
-                $q->where('day', $class->day);
-            })
-            ->get()
-            ->some(function ($appt) use ($class) {
-                $p = $appt->class;
-                return ($class->start_time < $p->end_time && $class->end_time > $p->start_time);
-            });
-
-        if ($conflict) {
-            return response()->json(['message' => 'You have another appointment that overlaps.'], 409);
-        }
-
-        // ✅ Create the appointment
         $appointment = Appointment::create($validated);
 
-        return response()->json([
-            'message' => 'Appointment booked successfully',
-            'appointment' => $appointment
-        ], 201);
+        return response()->json($appointment, 201);
     }
 
-
-
-
-
-    public function update(Request $request, $id)
+    /**
+     * Display the specified appointment.
+     */
+    public function show(Appointment $appointment)
     {
-        $appointment = Appointment::findOrFail($id);
+        return $appointment;
+    }
 
+    /**
+     * Update the specified appointment in storage (e.g. confirm/cancel).
+     */
+    public function update(Request $request, Appointment $appointment)
+    {
         $validated = $request->validate([
-            'student_id' => 'sometimes|exists:students,id',
-            'class_id' => 'sometimes|exists:class,id',
-            'status' => 'sometimes|in:booked,cancelled,attended',
-            'notes' => 'nullable|string',
+            'status'       => 'in:pending,confirmed,cancelled',
+            'scheduled_at' => 'sometimes|date',
+            'notes'        => 'sometimes|string|nullable',
         ]);
 
         $appointment->update($validated);
 
-        return response()->json([
-            'message' => 'Appointment updated successfully',
-            'appointment' => $appointment
-        ]);
+        return response()->json($appointment);
     }
 
-    public function destroy($id)
+    /**
+     * Remove the specified appointment from storage.
+     */
+    public function destroy(Appointment $appointment)
     {
-        $appointment = Appointment::findOrFail($id);
         $appointment->delete();
 
         return response()->json(['message' => 'Appointment deleted']);

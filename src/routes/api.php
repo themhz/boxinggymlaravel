@@ -25,7 +25,7 @@ use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\SessionExerciseController;
 use App\Http\Controllers\SessionExerciseStudentController;
 use App\Http\Controllers\ClassSessionAttendanceController;
-
+use App\Http\Controllers\AppointmentController;
 /*
 |--------------------------------------------------------------------------
 | Authentication & Account Management
@@ -96,8 +96,7 @@ Route::apiResource('lessons', controller: LessonController::class)->only(['index
 Route::apiResource('teachers', controller: TeacherController::class)->only(['index', 'show']);
 Route::apiResource('exercises', ExerciseController::class)->only(['index', 'show']);
 Route::apiResource('offers', controller: OfferController::class)->only(['index', 'show']);
-
-
+Route::apiResource('appointments', AppointmentController::class)->only(['store']);
 Route::apiResource('membership-plans', MembershipPlanController::class)->only(['index', 'show']);
 Route::apiResource('payment-methods', PaymentMethodController::class)->only(['index', 'show']);
 
@@ -113,13 +112,17 @@ Route::apiResource('payment-methods', PaymentMethodController::class)->only(['in
 
 Route::middleware('auth:sanctum')->group(function () {
 
+    Route::apiResource('appointments', AppointmentController::class)
+        ->only(['index','show','update','destroy'])
+        ->middleware('can:manage-appointments'); // adjust gate as needed
+
     Route::apiResource('sessions.exercises', SessionExerciseController::class)
-    ->parameters(['sessions' => 'session', 'exercises' => 'session_exercise'])
-    ->only(['index', 'show']);
+        ->parameters(['sessions' => 'session', 'exercises' => 'session_exercise'])
+        ->only(['index', 'show']);
 
     
     Route::apiResource('classes.sessions.attendances', ClassSessionAttendanceController::class)
-    ->only(['index', 'show']);
+        ->only(['index', 'show']);
     
     Route::apiResource('students.payments', StudentPaymentController::class)->only(['index', 'show']);
     Route::apiResource('students.exercises', StudentExerciseController::class)

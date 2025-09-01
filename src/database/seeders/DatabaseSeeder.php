@@ -35,7 +35,8 @@ class DatabaseSeeder extends Seeder
             ClassExceptionSeeder::class,
             ClassTeacherSeeder::class,
             SessionExerciseSeeder::class,            
-            SessionExerciseStudentsSeeder::class
+            SessionExerciseStudentsSeeder::class,
+            AppointmentsTableSeeder::class,
         ]);
 
         // Create or update the admin user
