@@ -100,9 +100,6 @@ Route::apiResource('offers', controller: OfferController::class)->only(['index',
 
 Route::apiResource('membership-plans', MembershipPlanController::class)->only(['index', 'show']);
 Route::apiResource('payment-methods', PaymentMethodController::class)->only(['index', 'show']);
-Route::apiResource('sessions.exercises', SessionExerciseController::class)
-    ->parameters(['sessions' => 'session', 'exercises' => 'session_exercise'])
-    ->only(['index', 'show']);
 
 
 /*
@@ -116,6 +113,11 @@ Route::apiResource('sessions.exercises', SessionExerciseController::class)
 
 Route::middleware('auth:sanctum')->group(function () {
 
+    Route::apiResource('sessions.exercises', SessionExerciseController::class)
+    ->parameters(['sessions' => 'session', 'exercises' => 'session_exercise'])
+    ->only(['index', 'show']);
+
+    
     Route::apiResource('classes.sessions.attendances', ClassSessionAttendanceController::class)
     ->only(['index', 'show']);
     
