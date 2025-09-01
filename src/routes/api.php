@@ -188,12 +188,7 @@ Route::put('classes-schedule/{id}', [ClassController::class, 'update']);
 Route::patch('classes-schedule/{id}', [ClassController::class, 'update']);
 Route::delete('classes-schedule/{id}', [ClassController::class, 'destroy']);
 
-//Classes API Routes
-// Route::get('classes/{id}/students', [ClassController::class, 'students']);
-// Route::post('classes/{id}/students', [ClassController::class, 'addStudent']);
-// Route::put('classes/{classId}/students/{studentId}', [ClassController::class, 'updateStudent']);
-// Route::patch('classes/{classId}/students/{studentId}', [ClassController::class, 'patchStudent']);
-// Route::delete('classes/{classId}/students/{studentId}', [ClassController::class, 'removeStudent']);
+
 
 // STUDENT → CLASSES (uses StudentClassController)
 Route::apiResource('students.classes', StudentClassController::class)
@@ -244,17 +239,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 
 
-
-
-Route::apiResource('students.attendance', StudentAttendanceController::class)->only(['index', 'store', 'update', 'destroy', 'show']);
-
-// Route::apiResource('students.payments', StudentPaymentController::class)
-//     ->parameters([
-//         'students' => 'user',        // bind {students} to App\Models\User
-//         'payments' => 'payment',     // bind {payment} to App\Models\StudentPayment
-//     ])->only(['index', 'show', 'store', 'update', 'destroy']);
-
-
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('students.attendance', StudentAttendanceController::class)
+        ->only(['index','store','update','destroy','show']);        
+});
 
 
 // TEACHERS → CLASSES (pivot/controller)
@@ -321,14 +309,46 @@ Route::middleware(['auth:sanctum'])->group(function () {
 });
 
 
-Route::apiResource('session-exercise-students', SessionExerciseStudentController::class)
-    ->only(['index','show']);
 
-// Only admins can write session_exercise_students
-Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('session-exercise-students', SessionExerciseStudentController::class)
+Route::middleware(['auth:sanctum'])->group(function () {
+    // 1) Constrain wildcards so "students" won't match {session_exercise}
+    Route::pattern('session', '[0-9]+');
+    Route::pattern('session_exercise', '[0-9]+');
+    Route::pattern('student_exercise', '[0-9]+');
+    Route::pattern('student', '[0-9]+');
+
+    // 2) Register the literal route FIRST
+    // GET /api/sessions/{session}/exercises/students
+    Route::get(
+        'sessions/{session}/exercises/students',
+        [SessionExerciseStudentController::class, 'indexForSession']
+    )->name('sessions.exercises.students.all');
+
+    // 3) Your nested students routes
+    Route::apiResource('sessions.exercises.students', SessionExerciseStudentController::class)
+        ->parameters([
+            'sessions'  => 'session',
+            'exercises' => 'student_exercise',
+            'students'  => 'student',
+        ])
+        ->only(['index','show']);
+
+    Route::apiResource('sessions.exercises.students', SessionExerciseStudentController::class)
+        ->parameters([
+            'sessions'  => 'session',
+            'exercises' => 'student_exercise',
+            'students'  => 'student',
+        ])
         ->only(['store','update','destroy']);
+
+    // 4) Your existing SessionExercise resource MUST be after the literal route
+    //    and must be constrained so "students" isn't captured as an ID.
+    Route::apiResource('sessions.exercises', SessionExerciseController::class)
+        ->parameters(['sessions' => 'session', 'exercises' => 'session_exercise'])
+        ->whereNumber('session_exercise')   // <— important
+        ->only(['index','show']);           // (and your write routes similarly)
 });
+
 
 
 // Everyone can read attendances
