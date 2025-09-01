@@ -107,19 +107,6 @@ Route::apiResource('sessions.exercises', SessionExerciseController::class)
 
 /*
 |--------------------------------------------------------------------------
-| Custom single‑use routes
-|--------------------------------------------------------------------------
-| These don't fit neatly into an apiResource.
-*/
-
-// Class schedule (all users can read/write via dedicated endpoints)
-Route::get('classes-schedule', [ClassController::class, 'schedule']);
-Route::post('classes-schedule', [ClassController::class, 'store']);
-Route::match(['put', 'patch'], 'classes-schedule/{id}', [ClassController::class, 'update']);
-Route::delete('classes-schedule/{id}', [ClassController::class, 'destroy']);
-
-/*
-|--------------------------------------------------------------------------
 | Authenticated write (admin) routes
 |--------------------------------------------------------------------------
 | All of the routes below require Sanctum authentication.  Each resource
