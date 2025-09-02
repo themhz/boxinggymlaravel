@@ -26,6 +26,8 @@ use App\Http\Controllers\SessionExerciseController;
 use App\Http\Controllers\SessionExerciseStudentController;
 use App\Http\Controllers\ClassSessionAttendanceController;
 use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\AppointmentSlotController;
+
 /*
 |--------------------------------------------------------------------------
 | Authentication & Account Management
@@ -97,6 +99,7 @@ Route::apiResource('teachers', controller: TeacherController::class)->only(['ind
 Route::apiResource('exercises', ExerciseController::class)->only(['index', 'show']);
 Route::apiResource('offers', controller: OfferController::class)->only(['index', 'show']);
 Route::apiResource('appointments', AppointmentController::class)->only(['store']);
+Route::apiResource('appointment-slots', AppointmentSlotController::class)->only(['index','show']);
 Route::apiResource('membership-plans', MembershipPlanController::class)->only(['index', 'show']);
 Route::apiResource('payment-methods', PaymentMethodController::class)->only(['index', 'show']);
 
@@ -115,6 +118,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('appointments', AppointmentController::class)
         ->only(['index','show','update','destroy'])
         ->middleware('can:manage-appointments'); // adjust gate as needed
+
+    Route::apiResource('appointment-slots', AppointmentSlotController::class)
+        ->only(['store','update','destroy'])
+        ->middleware('can:manage-appointment-slots');
 
     Route::apiResource('sessions.exercises', SessionExerciseController::class)
         ->parameters(['sessions' => 'session', 'exercises' => 'session_exercise'])

@@ -10,15 +10,17 @@ class Appointment extends Model
     use HasFactory;
 
     protected $fillable = [
+        'slot_id',
         'name',
         'email',
-        'phone',
-        'scheduled_at',
+        'phone',        
         'notes',
         'status',
     ];
+    
 
-    protected $casts = [
-        'scheduled_at' => 'datetime',
-    ];
+    public function slot()
+    {
+        return $this->belongsTo(AppointmentSlot::class, 'slot_id');
+    }
 }

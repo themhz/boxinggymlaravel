@@ -2,44 +2,30 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Appointment;
-use Carbon\Carbon;
+use App\Models\AppointmentSlot;
 
 class AppointmentsTableSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-         Appointment::factory()->create([
-            'name'         => 'Demo User',
-            'email'        => 'demo@example.com',
-            'phone'        => '1234567890',
-            'scheduled_at' => Carbon::now()->addDays(2),
-            'notes'        => 'First trial session',
-            'status'       => 'pending',
-        ]);
+        // Fetch the first four slots (assumes slots have been created)
+        $bookedSlots = AppointmentSlot::orderBy('start_time')->take(4)->get();
 
+        foreach ($bookedSlots as $slot) {
+            Appointment::create([
+                'slot_id' => $slot->id,
+                'name'    => 'Demo User for slot '.$slot->id,
+                'email'   => 'demo'.$slot->id.'@example.com',
+                'phone'   => '555-000'.$slot->id,
+                'notes'   => 'Pre‑seeded booking',
+                'status'  => 'confirmed',
+            ]);
 
-        Appointment::factory()->create([
-            'name'         => 'Demo User2',
-            'email'        => 'demo@example2.com',
-            'phone'        => '1234567330',
-            'scheduled_at' => Carbon::now()->addDays(2),
-            'notes'        => 'Second trial session',
-            'status'       => 'pending',
-        ]);
-
-        Appointment::factory()->create([
-            'name'         => 'Demo User3',
-            'email'        => 'demo@adsada.com',
-            'phone'        => '1234567330',
-            'scheduled_at' => Carbon::now()->addDays(2),
-            'notes'        => 'Third trial session',
-            'status'       => 'completed',
-        ]);
+             // mark the slot as captured
+            $slot->is_captured = true;
+            $slot->save();
+        }
     }
 }
