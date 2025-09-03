@@ -38,6 +38,8 @@ class DatabaseSeeder extends Seeder
             SessionExerciseStudentsSeeder::class,
             AppointmentSlotsTableSeeder::class,
             AppointmentsTableSeeder::class,
+            CategoriesTableSeeder::class,
+            ArticlesTableSeeder::class,            
             
         ]);
 

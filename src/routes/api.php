@@ -27,6 +27,8 @@ use App\Http\Controllers\SessionExerciseStudentController;
 use App\Http\Controllers\ClassSessionAttendanceController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AppointmentSlotController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ArticleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -102,7 +104,8 @@ Route::apiResource('appointments', AppointmentController::class)->only(['store']
 Route::apiResource('appointment-slots', AppointmentSlotController::class)->only(['index','show']);
 Route::apiResource('membership-plans', MembershipPlanController::class)->only(['index', 'show']);
 Route::apiResource('payment-methods', PaymentMethodController::class)->only(['index', 'show']);
-
+Route::apiResource('categories', CategoryController::class)->only(['index','show']);
+Route::apiResource('articles',   ArticleController::class)->only(['index','show']);
 
 /*
 |--------------------------------------------------------------------------
@@ -114,6 +117,14 @@ Route::apiResource('payment-methods', PaymentMethodController::class)->only(['in
 */
 
 Route::middleware('auth:sanctum')->group(function () {
+
+    Route::apiResource('categories', CategoryController::class)
+        ->only(['store','update','destroy'])
+        ->middleware('can:manage-categories');
+
+    Route::apiResource('articles', ArticleController::class)
+        ->only(['store','update','destroy'])
+        ->middleware('can:manage-articles');
 
     Route::apiResource('appointments', AppointmentController::class)
         ->only(['index','show','update','destroy'])
