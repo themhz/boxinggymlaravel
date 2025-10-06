@@ -29,6 +29,7 @@ use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AppointmentSlotController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ArticleController;
+use Illuminate\Support\Carbon;
 
 /*
 |--------------------------------------------------------------------------
@@ -93,6 +94,18 @@ Route::middleware('auth:sanctum')->group(function () {
 | These routes allow anyone to list and view the resources.  They do not
 | permit creation, updating or deletion.
 */
+
+Route::get('/time/now', function (Request $r) {
+    $tz = $r->query('tz', 'UTC');
+    try { $now = Carbon::now($tz); } catch (\Throwable $e) { $now = Carbon::now('UTC'); }
+    return response()->json([
+        'timezone' => $tz,
+        'iso'      => $now->toIso8601String(),
+        'date'     => $now->toDateString(),
+        'time'     => $now->toTimeString(),        
+        'unix'     => $now->unix(),
+    ]);
+});
 
 Route::apiResource('students', StudentController::class)->only(['index', 'show']);
 Route::apiResource('classes', ClassController::class)->only(['index', 'show']);
